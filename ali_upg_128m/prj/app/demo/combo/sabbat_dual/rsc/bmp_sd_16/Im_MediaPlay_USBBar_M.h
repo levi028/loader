@@ -1,0 +1,16 @@
+/*
+E:\16Bit\Bitmap\Im_MediaPlay_USBBar_M.h
+    bmp file size:        1496
+    bmp data offset:    54
+    bmp data width:        24
+    bmp data height:    30
+    bmp data size:        1440
+    RLE bmp data size:    21
+*/
+
+
+const unsigned char im_media_play_usbbar_m[] __attribute__((section(".flash"))) =
+{
+0x30,0xdb,0xb6,0x7f,0xfc,0xc2,0x7f,0xfc,0xc2,0x7f,0xfc,0xc2,0x7f,0xfc,0xc2,0x74,
+0xfc,0xc2,0x30,0xdb,0xb6
+};

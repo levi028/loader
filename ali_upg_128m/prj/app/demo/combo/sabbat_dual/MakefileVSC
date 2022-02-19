@@ -1,0 +1,33 @@
+# Only used for CONAX internal
+# Only used for CONAX VSC project
+
+ROOT = ../../../../..
+
+include ${ROOT}/src/path.def
+
+CAS9_VSC_ENV_REL_DIR=${BASE_DIR}/../cas9_vsc_env_release_combo
+
+vsc_env_rel:
+	mkdir -p ${CAS9_VSC_ENV_REL_DIR}/src/vsc
+	mkdir -p ${CAS9_VSC_ENV_REL_DIR}/obj
+	mkdir -p ${CAS9_VSC_ENV_REL_DIR}/inc
+	mkdir -p ${CAS9_VSC_ENV_REL_DIR}/inc/api
+	mkdir -p ${CAS9_VSC_ENV_REL_DIR}/inc/bus
+	mkdir -p ${CAS9_VSC_ENV_REL_DIR}/inc/hld
+	
+	cp -rf ${BASE_DIR}/src/vsc ${CAS9_VSC_ENV_REL_DIR}/src/
+	cp -rf ${BASE_DIR}/src/makefile ${CAS9_VSC_ENV_REL_DIR}/src/
+	cp -rf ${BASE_DIR}/inc/vsc ${CAS9_VSC_ENV_REL_DIR}/inc/
+	cp -rf ${BASE_DIR}/inc/hal ${CAS9_VSC_ENV_REL_DIR}/inc/
+	cp -rf ${BASE_DIR}/inc/osal ${CAS9_VSC_ENV_REL_DIR}/inc/
+	cp -rf ${BASE_DIR}/inc/hld/crypto ${CAS9_VSC_ENV_REL_DIR}/inc/hld/
+	cp -rf ${BASE_DIR}/inc/hld/dsc ${CAS9_VSC_ENV_REL_DIR}/inc/hld/
+	cp -rf ${BASE_DIR}/inc/hld/trng ${CAS9_VSC_ENV_REL_DIR}/inc/hld/
+	cp -rf ${BASE_DIR}/inc/vsc ${CAS9_VSC_ENV_REL_DIR}/inc/
+	cp -f ${BASE_DIR}/inc/hld/hld_dev.h ${CAS9_VSC_ENV_REL_DIR}/inc/hld/
+	cp -rf ${BASE_DIR}/inc/bus/otp ${CAS9_VSC_ENV_REL_DIR}/inc/bus/
+	cp -rf ${BASE_DIR}/inc/api/libc ${CAS9_VSC_ENV_REL_DIR}/inc/api/
+	cp -rf ${BASE_DIR}/inc/sys_define.h ${CAS9_VSC_ENV_REL_DIR}/inc/
+	cp -rf ${BASE_DIR}/inc/basic_types.h ${CAS9_VSC_ENV_REL_DIR}/inc/
+	cp -rf ${BASE_DIR}/inc/retcode.h ${CAS9_VSC_ENV_REL_DIR}/inc/
+	cp -rf ${BASE_DIR}/inc/types.h ${CAS9_VSC_ENV_REL_DIR}/inc/

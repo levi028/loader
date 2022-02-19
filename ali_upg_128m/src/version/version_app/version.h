@@ -1,0 +1,7 @@
+#define UTS_VERSION " Wed Feb 9 15:25:59 2022"
+#define COMPILE_TIME "15:26:00"
+#define COMPILE_BY "dell"
+#define COMPILER "gcc version 3.4.4 mipssde-6.06.01-20070420"
+#define APP_VER "1.0.0"
+#define APPLABEL "SDK4.0ma.18.4_ACS_C_20180711"
+#define SDKLABEL "SDK4.0ba.4.0_20101217"

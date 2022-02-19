@@ -1,0 +1,148 @@
+#=========================================================
+# M3711C customer compile bootloader(sdk package)
+#=========================================================
+enter folder "ALi_Boot":
+    make defcfg_c3711c_acs app
+    
+	See also reference documents : 
+	ALi_Boot/doc/customer/Compiling_Guide_for_BL_SDK_v1.0.pdf
+	
+****************************************************
+ M3711C customer compile method (sdk package)
+****************************************************
+1. prepare keys.
+   1.1 generate the firmware encryption key(16 bytes) and name it as 
+   "decrypt_key.bin", then put to "sabbat_dual/gen_ap".
+
+   1.2 generate the firmware RSA key pair using redemo.exe in SDK, then put it 
+   (sys_sw_pair.der) to "sabbat_dual/gen_ap".
+
+   Ex: 1:./redemo.exe -G sys_sw_pair.key ejtag.bin 0x1234 0x5678
+       2:then,will sys_sw_pair.key(ali format key pair) convert to der format key pair.
+       (or refer to ALiCrypto_User_Guide_V1.3.docx document to make it)
+       3:convert command:
+
+[PARAMETER]
+#DER Format to ALI format
+rsa_key_format=ALI
+input_rsa_key=sys_sw_pair.key
+
+[CMD]
+convert_key
+
+      4:save convert command to Key_Convert.cmd file
+      5:in cygwin environment,run:
+      ./ALiCrypto Key_Convert.cmd
+   
+2.configure correct board type you are using in "sabbat_dual/compiler_3711c.def".
+Make sure that only enable one board, disable others.
+#export _M36F_SINGLE_CPU=1
+General CA project should open '_GEN_CA_ENABLE_' and close '_CAS9_CA_ENABLE_'
+#_CAS9_CA_ENABLE_ = 1
+_GEN_CA_ENABLE_ = 1
+
+if your board is burned the BLEncrypt OTP, you also need to open the following macro:
+_ENABLE_BL_ENCRYPTED_ = 1
+
+Open "_USE_SIGNED_BL_SEE = 1":
+_USE_SIGNED_BL_SEE = 1
+
+if your chip support DD/DD+, you can open the macro "_DD_SUPPORT = 1"
+
+3. Copy SEE abs to "sabbat_dual/gen_ap":
+Select one abs from folder "see_abs", rename to "signed_app_see.ubo", then copy 
+to  "sabbat_dual/gen_ap".
+
+4.compile
+4.1 build ota loader cmd:
+make path_t2
+make config_3711c_ota
+make new
+make ddk		    #copy sdk libs to obj/
+make product_7z		#build ota loader
+
+4.2 build ouc loader(OTA+USB) cmd:
+make path_t2
+make config_3711c_ouc
+make new
+make ddk		    		#copy sdk libs to obj/
+make product_7z		#build ouc loader
+
+4.3 build fw cmd:
+make path_t2
+make config_3711c
+make new
+make ddk		    #copy sdk libs to obj/
+make product_7z		#build fw
+
+5.burn it into flash by "obj/s3711c_sf_burn_sabbat_8m.ini"
+
+6.(1) If you are going to run it from flash, then just power the box on.
+  (2) If you are going to run it from WinGDB instead of from flash, refer to 
+  "gen_ap/how_to_download_debug_M3711C_acs.txt".
+
+
+*******************************************************
+M3711C Ali internal compile method (Src label)
+*******************************************************
+1.configure correct board type you are using in "sabbat_dual/compiler_3711c.def".
+Make sure that only enable one board, disable others.
+#export _M36F_SINGLE_CPU=1
+a:General CA project should open '_GEN_CA_ENABLE_' and close '_CAS9_CA_ENABLE_'
+#_CAS9_CA_ENABLE_ = 1
+_GEN_CA_ENABLE_ = 1
+
+b:Conax CA project should open '_CAS9_CA_ENABLE_' and close '_GEN_CA_ENABLE_'
+_CAS9_CA_ENABLE_ = 1
+#_GEN_CA_ENABLE_ = 1
+
+open _DD_SUPPORT = 1
+
+2.compile
+cd src/see/m36f
+build see ota lib cmd:
+make path_t2 config_3711c_ota new; make
+
+build see lib cmd:
+make path_t2 config_3711c new; make
+
+cd prj/app/demo/combo/sabbat_dual 
+build main ota lib and loader cmd:
+make path_t2
+make config_3711c_ota
+make new
+make sdk_clean
+make sdk            #build main ota lib
+make product_7z     #build ota loader
+
+build main ota lib and ouc loader(OTA+USB) cmd:
+make path_t2
+make config_3711c_ouc
+make new
+make sdk_clean
+make sdk            #build main ouc loader lib
+make product_7z		#build ouc loader
+
+
+build main lib and fw cmd:
+make path_t2
+make config_3711c
+make new
+make sdk_clean
+make sdk            #build main lib
+make product_7z     #build fw
+
+3.burn it into flash by "obj/s3711c_sf_burn_sabbat_8m.ini"
+
+4.(1) If you are going to run it from flash, then just power the box on.
+  (2) If you are going to run it from WinGDB instead of from flash:
+      a:use obj/s3711c_download_debug_acs.ini to WinGDB eeprom download debug for acs.
+      b:use obj/s3711c_sabat.ini to WinGDB ejtag attach debug.
+  
+5. About how to change the ddr setting by your board.
+
+Modify the "mem_init_file" in sabbat_dual\gen_ap\generate_boot_total_abs\BL_MERGE.cmd 
+
+6. About "No Satellite" issue when using the Retailor board to debug
+You should disable the "FLASH_SOFTWARE_PROTECT" macro for Retailor Project.
+

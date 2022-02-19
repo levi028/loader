@@ -1,0 +1,10 @@
+LOCAL_BASE = /cygdrive/e/ALi3711/Ali_3711C_Dvbc/OUC
+ 
+BASE_DIR = ${LOCAL_BASE}
+DDK = ddkt2
+INC_DIR = ${BASE_DIR}/inc
+LIB_DIR = ${BASE_DIR}/obj
+REL_DIR = ${BASE_DIR}/rel
+DDK_DIR = ${BASE_DIR}/${DDK}
+PLUGINDDK_DIR = ${BASE_DIR}/${DDK}/plugin
+PLUGINEXT_DIR = ${BASE_DIR}/${DDK}/plugin_ext

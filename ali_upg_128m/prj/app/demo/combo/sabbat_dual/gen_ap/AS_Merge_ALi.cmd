@@ -1,0 +1,13 @@
+[PARAMETER]
+epk_block=ExtKey_Block_demo_ali.abs
+epk_block_sign=ExtKey_Block_sign_demo_ali.abs
+params_area=Params_Area_demo.abs
+params_area_sign=Params_Area_sign_demo_ali.abs
+aux_code_enc=AUX_Code_Enc_demo.abs
+aux_code_sign=AUX_Code_sign_demo_ali.abs
+sys_uk=decrypt_key.bin
+boot_code=Boot_Code_demo.abs
+boot_code_sign=Boot_Code_sign_demo_ali.abs
+output=boot_total_area.abs
+[CMD]
+merge

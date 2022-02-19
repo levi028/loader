@@ -1,0 +1,8 @@
+****************************************************
+M3711C download debug method
+****************************************************
+1:at first, make product_7z or make ui bin
+2:second,download C3711C_download_acs.ini in "obj" dir
+
+
+

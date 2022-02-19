@@ -1,0 +1,2333 @@
+#
+# -= Makefile for application =-
+#
+# Note:
+# . "make config" must be done for initial routines.
+#
+# Usage:
+# . Change the ROOT definition, if necessary;
+#   Make it point to the root of the software tree.
+#
+# Detect compile environment and specify compiler
+OS := $(shell uname -s)
+OS_IS_LINUX  := $(shell echo $(OS) | grep -i linux)
+OS_IS_CYGWIN := $(shell echo $(OS) | grep -i cygwin)
+
+# Destination to the root of software tree
+RUN_DIR = d:/winice
+ROOT = ../../../../..
+include ${ROOT}/src/path.def
+include ${ROOT}/src/compiler.def
+
+ifdef _AUI_
+ROOT_PRJ = ../prj/app/demo/combo/aui_demo
+else
+ROOT_PRJ = ../prj/app/demo/combo/sabbat_dual
+endif
+PMU_SRC = ${ROOT}/src/lld/pmu/mcu/keil_prj
+RLS_DATE = $(shell date +%y%m%d)
+RLS_NAME = Combo_SAB_$(RLS_DATE)
+SIGNATURE_DIR = ../../signature/
+
+MAKEFILE_CMD = Makefile3711c.cmd
+SYS_CONFIG_H = sys_config_3711c.h
+SYS_MEMMAP_H = sys_memmap_3711c.h
+COMPILER_DEF = compiler_3711c.def
+DDR_DIR = DDR-Setting
+DDR_DIE = C3711C
+ifdef _DEVELOP_ENVIRONMENT_
+DDR_SUB_DIR = Temp
+else
+DDR_SUB_DIR = Golden
+endif
+DDR_PATH = ${DDR_DIR}/${DDR_DIE}/${DDR_SUB_DIR}
+BL_CMD_PATH = bloader_cmd/c3711c
+
+MEM_INIT_FILE =
+FINAL_MEM_INIT = C3711C_Memory_Init.txt
+BOOT_CFG = boot_3711c_128M_dual.cfg
+
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+LIBE =
+LIBSTDCPP = -lstdc++
+PLUG_M_SH = plugin_m_linux.sh
+PLUG_M_OUT_SH = plugin_m_out_linux.sh
+
+else
+LIBE = -le
+LIBSTDCPP =
+PLUG_M_SH = plugin_m.sh
+PLUG_M_OUT_SH = plugin_m_out.sh
+endif
+
+CA_AS_DIR = bl_tool
+CONAX_AP_DIR =
+ifdef _CAS7_CA_ENABLE_
+CONAX_AP_DIR = conax_ap7
+endif
+CA_AP_DIR = conax_ap
+
+ifdef _BC_CA_ENABLE_
+CA_AP_DIR = bc_ap
+endif
+
+ifdef _BC_CA_STD_ENABLE_
+CA_AP_DIR = bc_ap_s
+endif
+
+ifdef _SMI_ENABLE_
+SMI_AP_DIR = smi_ap
+endif
+
+ifdef _GEN_CA_ENABLE_
+CA_AP_DIR = gen_ap
+SEE_ABS   =see_abs_acs
+endif
+
+ifdef _C1800A_CA_ENABLE_
+CA_AP_DIR = ird_ap
+SEE_ABS   =see_abs_ird
+ifdef _C1800A_USE_SIGNED_IFCP_BL_
+	ifdef _BOARD_DB_M3721L_01V01_
+		SIGNED_IFCP_BL=ifcp_bl_M3721.ubo
+	endif
+	ifdef _BOARD_DB_M3721_02V01_
+		SIGNED_IFCP_BL=ifcp_bl_M3721.ubo
+	endif
+else
+	SIGNED_IFCP_BL=ifcp_bl_M3722.ubo
+endif
+endif
+
+ifdef _DVBS_ENABLE_
+NIM_S2_LIB = -lnim_s2
+else
+NIM_S2_LIB =
+endif
+
+VSC_LIB_NAME=signed_vsc_see_se_M3527_128M.bin
+
+ifdef _C0700A_VSC_ENABLE_
+VSC_NAME = _c0700a_vsc
+else
+ifdef _CAS9_VSC_ENABLE_
+VSC_NAME = _vsc
+else
+VSC_NAME =
+endif
+endif
+
+PRO_TYPE=PT_VSC
+TO_BESIGNED_SEE_BL=to_besigned_boot_see_bl_20160930.abs
+TO_BESIGNED_SEE_BL_SIG=to_besigned_boot_see_bl_20160930-signature.abs
+ifndef _BUILD_OTA_E_
+	ifdef _CAS9_SC_UPG_
+		SIGNED_APP_SEE=signed_app_see_scu.ubo
+	else
+		SIGNED_APP_SEE=signed_app_see.ubo
+	endif
+else
+	ifdef _CAS9_SC_UPG_
+		SIGNED_APP_SEE=signed_ota_app_see_scu.ubo
+	else
+		SIGNED_APP_SEE=signed_ota_app_see.ubo
+	endif
+endif
+
+
+ifndef _BUILD_OTA_E_
+	ifdef _CAS9_VSC_ENABLE_
+		ifdef _CAS9_SC_UPG_
+			SEELIB = libsee_m3711c_vsc_scu
+		else
+			SEELIB = libsee_m3711c_vsc
+		endif
+	else
+		ifdef _C0700A_VSC_ENABLE_
+			SEELIB = libsee_m3711c_c0700a_vsc
+		else
+			SEELIB = libsee_m3711c
+		endif
+	endif
+else
+  ifdef _BUILD_USB_LOADER_
+	ifdef _CAS9_VSC_ENABLE_
+		ifdef _CAS9_SC_UPG_
+			SEELIB = libsee_m3711c_ota_vsc_scu
+		else
+			SEELIB = libsee_m3711c_ota_vsc
+		endif
+	else
+		SEELIB = libsee_m3711c_ota
+	endif
+  else
+	ifdef _CAS9_VSC_ENABLE_
+		ifdef _CAS9_SC_UPG_
+			SEELIB = libsee_m3711c_ota_vsc_scu
+		else
+			SEELIB = libsee_m3711c_ota_vsc
+		endif
+	else
+		SEELIB = libsee_m3711c_ota
+	endif
+  endif
+  
+  ifdef _C0700A_VSC_ENABLE_
+  	SEELIB = libsee_m3711c_ota_c0700a_vsc
+  endif
+endif
+
+BOOT_SEE = boot_see_m3711c
+MPG_LIB = libmpg2c_t2
+PLUGIN_PATH = ${PLUGINDDK_DIR}
+PLUGIN_EXT_PATH = ${PLUGINEXT_DIR}
+
+ifdef _DISABLE_MEDIA_PLAYER_ 
+PLUGIN_OBJ = $(shell ls $(PLUGIN_PATH)/plugin_e*.o )
+PLUGIN_MAIN = $(shell ls $(PLUGINEXT_DIR)/*ntfs.o )
+#PLUGIN_MP2_AD=$(PLUGIN_PATH)/plugin_mp2.o
+#PLUGIN_OBJ+=${PLUGIN_MP2_AD}
+PLUGIN_MPX_AD=$(PLUGIN_PATH)/plugin_mp3.o
+PLUGIN_OBJ+=${PLUGIN_MPX_AD}
+else
+PLUGIN_OBJ = $(shell ls $(PLUGIN_PATH)/*.o )
+PLUGIN_MAIN = $(shell ls $(PLUGINEXT_DIR)/*.o )
+endif
+
+# output file name
+OUT = Sabbat_s3711c
+SEE_OUT = see_sabbat_s3711c
+SEE_BL_OUT = see_bl
+
+ifdef _BOOT_LOGO_ENABLE_
+	LOGO_EN=_logo
+else
+	LOGO_EN=
+endif
+
+# Link Script File
+# Default is retailer
+SEE_LSCR = see_ldscript_m3711c.ld
+
+ifdef _CAS9_VSC_ENABLE_
+	SEE_LSCR = see_ldscript_m3711c_vsc.ld
+else
+	ifdef _USE_64M_MEM_
+		SEE_LSCR = see_ldscript_m3711c_64m.ld
+	endif
+	ifdef _SUPPORT_256M_MEM
+		SEE_LSCR = see_ldscript_m3711c_256M.ld
+	endif
+	ifdef _CAS9_CA_ENABLE_
+		SEE_LSCR = see_ldscript_m3711c.ld
+	endif
+	ifdef _GEN_CA_ENABLE_
+		SEE_LSCR = see_ldscript_m3711c.ld
+	endif
+	ifdef _BC_CA_ENABLE_
+		SEE_LSCR = see_ldscript_m3711c.ld
+	endif
+	ifdef _C1800A_CA_ENABLE_
+		SEE_LSCR = see_ldscript_m3711c.ld
+	endif
+	ifdef _C0700A_VSC_ENABLE_
+		SEE_LSCR = see_ldscript_m3711c_c0700a_vsc.ld
+	endif		
+endif
+
+ifdef _BUILD_OTA_E_
+ ifdef DUAL_ENABLE
+  	ifdef _CAS9_CA_ENABLE_
+  		ifdef _BUILD_OUC_LOADER_
+  			BSP = blocks_script_7z_ouc_M3711C_dual.txt
+  		else
+			ifdef _BUILD_USB_LOADER_CAS9
+				BSP = blocks_script_7z_usb_M3711C_dual.txt
+			else
+				BSP = blocks_script_7z_ota_M3711C_dual.txt
+	  		endif
+	  	endif
+  	else
+            ifdef _BC_CA_ENABLE_
+                ifdef _BUILD_USB_LOADER_
+                    BSP = blocks_script_7z_usb_M3711C_dual.txt
+                else
+					BSP = blocks_script_7z_ota_M3711C_dual.txt
+  			endif
+ 		else
+	                ifdef _BC_CA_STD_ENABLE_
+	                    BSP = blocks_script_7z_ota_dual.txt
+	                    BSP_OTA = blocks_script_7z_ota_bc_4m.txt
+	                else
+				ifdef _GEN_CA_ENABLE_
+					ifdef _BUILD_OUC_LOADER_
+							BSP = blocks_script_7z_ouc_M3711C_dual.txt
+					else
+						ifdef _BUILD_USB_LOADER_GEN
+							BSP = blocks_script_7z_usb_M3711C_dual.txt
+						else
+							BSP = blocks_script_7z_ota_M3711C_dual.txt
+						endif
+					endif
+				else
+					ifdef _BUILD_OUC_LOADER_
+							BSP = blocks_script_7z_ouc_M3711C_dual.txt
+					else
+                    		BSP = blocks_script_7z_ota_M3711C_dual.txt
+                    endif			
+                endif
+            endif
+        endif
+        endif
+    else
+  ifdef _COMPRESS_LZO
+	BSP = blocks_script_7z_ota_lzo.txt
+  else
+	BSP = blocks_script_7z_ota.txt
+  endif
+ endif
+else
+    ifdef DUAL_ENABLE
+        ifdef _CAS9_CA_ENABLE_
+            ifdef _EROM_UPG_HOST_ENABLE_
+                ifeq ($(_EROM_UPG_HOST_ENABLE_), 1)
+                	ifdef _CAS9_VSC_ENABLE_
+                    		BSP = blocks_script_7z_sabbat_M3711C_dual_cas9_vsc_erom_stb_host.txt
+                    	else
+                        	ifdef _OUC_LOADER_IN_FLASH_
+                				BSP = blocks_script_7z_sabbat_M3711C_dual_cas9_8m_erom_stb_host.txt
+                			else
+                    			BSP = blocks_script_7z_sabbat_M3711C_dual_cas9_erom_stb_host.txt
+                    		endif
+                    	endif
+                else
+                    BSP = blocks_script_7z_sabbat_M3711C_dual_cas9_erom_pc_host.txt
+                endif
+            else
+                ifdef _CAS9_VSC_ENABLE_
+                	ifdef _OUC_LOADER_IN_FLASH_
+                		BSP = blocks_script_7z_sabbat_M3711C_dual_cas9_vsc_8m.txt
+                	else
+                    		BSP = blocks_script_7z_sabbat_M3711C_dual_cas9_vsc.txt
+                    	endif
+                else
+                	ifdef _OUC_LOADER_IN_FLASH_
+                		BSP = blocks_script_7z_sabbat_M3711C_dual_cas9_8m.txt
+                	else
+                    		BSP = blocks_script_7z_sabbat_M3711C_dual_cas9.txt
+                    	endif
+                endif
+            endif
+        else
+            ifdef _CAS7_CA_ENABLE_
+                BSP = blocks_script_7z_sabbat_M3711C_dual_swca.txt
+            else
+                ifdef _BC_CA_ENABLE_
+					ifdef _SMI_ENABLE_
+						BSP = blocks_script_7z_sabbat_M3711C_dual_smi_bc.txt
+					else
+						BSP = blocks_script_7z_sabbat_M3711C_dual_bc.txt
+					endif
+                else
+					ifdef _BC_CA_STD_ENABLE_
+							BSP = blocks_script_7z_sabbat_M3711C_dual_bc_std.txt
+					else
+						ifdef _GEN_CA_ENABLE_
+							ifdef _SMI_ENABLE_
+								BSP = blocks_script_7z_sabbat_M3711C_dual_smi_bc.txt
+							else
+								ifdef _C0700A_VSC_ENABLE_
+									BSP = blocks_script_7z_sabbat_M3711C_dual_c0700a_vsc_8m.txt
+								else
+									BSP = blocks_script_7z_sabbat_M3711C_dual_gen_8m${LOGO_EN}.txt
+								endif
+							endif
+						else
+							ifdef _WIFI_DISPLAY_ENABLE_
+									BSP = blocks_script_7z_sabbat_M3711C_dual_alicast.txt
+							else
+								ifdef _C1800A_CA_ENABLE_
+									BSP = blocks_script_7z_sabbat_M3711C_dual_ird_8m.txt
+								else
+									BSP = blocks_script_7z_sabbat_M3711C_dual.txt
+								endif	
+							endif
+						endif
+					endif
+				endif
+			endif
+        endif
+    else
+        ifdef _CAS7_CA_ENABLE_
+            BSP = blocks_script_7z_sabbat_M3711C_single_swca.txt
+        else
+            BSP = blocks_script_7z_sabbat_M3711C_single.txt
+        endif
+    endif
+	ifdef _SD_ONLY_
+		BSP = blocks_script_7z_sabbat_M3711C_dual_gen.txt
+	endif
+endif
+
+
+ENCBL_EN=_sec
+
+
+ifdef _USE_64M_MEM_
+	MEMSZ=_64M
+else
+	ifdef _SUPPORT_256M_MEM
+		MEMSZ=_256M
+	else	
+		MEMSZ=
+	endif
+endif
+
+ifdef DUAL_ENABLE
+	CPU_EN=_dual
+else
+	CPU_EN=_single
+endif
+
+BL_CMD = C3711C_BL_Generate.cmd
+BL_GEN_CMD = C3711C_BL_Generate.cmd
+INCERT_UK_CMD = Insert_Decrypt_UK_C3711C.cmd
+CHIP=_3711c
+
+ifeq ($(MEMSZ),)
+BOOTLOADER_MA = bloader3${CHIP}${CPU_EN}${LOGO_EN}_128M.abs
+else
+BOOTLOADER_MA = bloader3${CHIP}${CPU_EN}${LOGO_EN}${MEMSZ}.abs
+endif
+
+ifdef _CAS9_CA_ENABLE_
+	BOOTLOADER_MA = bloader3_3711c${LOGO_EN}${ENCBL_EN}${VSC_NAME}${MEMSZ}.abs
+ifdef _CAS9_VSC_ENABLE_
+	BOOTLOADER_SEE = see_bloader3_3711c${VSC_NAME}_s.abs
+else
+	BOOTLOADER_SEE = see_bloader3_3711c${LOGO_EN}${ENCBL_EN}${VSC_NAME}${MEMSZ}_s.abs
+endif
+endif
+
+
+ifdef _BC_CA_ENABLE_
+	BOOTLOADER_MA = bloader3_3711c${LOGO_EN}${ENCBL_EN}${VSC_NAME}${MEMSZ}.abs	
+	BOOTLOADER_SEE = see_bloader3_3711c${LOGO_EN}${ENCBL_EN}${VSC_NAME}${MEMSZ}_s.abs
+endif
+
+ifdef _GEN_CA_ENABLE_
+ifdef _NOVEL_ENABLE_
+	BOOTLOADER_MA = bloader3_3711c${LOGO_EN}${ENCBL_EN}_novel${MEMSZ}.abs
+else
+ifdef _ENABLE_BL_ENCRYPTED_
+	BOOTLOADER_MA = bloader3_3711c${LOGO_EN}${ENCBL_EN}_acs${MEMSZ}.abs
+else
+	BOOTLOADER_MA = bloader3_3711c${LOGO_EN}${ENCBL_EN}_acs${MEMSZ}.abs
+endif
+endif
+	BOOTLOADER_SEE = see_bloader3_3711c${LOGO_EN}${ENCBL_EN}${VSC_NAME}${MEMSZ}_s.abs
+endif
+
+ifdef _C1800A_CA_ENABLE_
+	BOOTLOADER_MA = bloader3_3711c${LOGO_EN}${ENCBL_EN}_ird${MEMSZ}.abs	
+	BOOTLOADER_SEE = see_bloader3_3711c${LOGO_EN}${ENCBL_EN}${VSC_NAME}${MEMSZ}_s.abs
+endif
+
+ifdef _C0700A_VSC_ENABLE_
+	BOOTLOADER_MA = bloader3_3711c${LOGO_EN}${ENCBL_EN}${VSC_NAME}_gen${MEMSZ}.abs
+endif
+
+OUC_LOADER=
+
+BOOTLOADER_DDR = bloader3_3711c.abs
+
+ifdef _BOARD_DB_M3711C_01V01_
+BOOTLOADER_MA_RT = bloader3_3711c${CPU_EN}${LOGO_EN}.abs
+OUC_LOADER=M3711C_ouc_loader.bin
+ifdef _DEVELOP_ENVIRONMENT_
+MEM_INIT_FILE = C3711C_DDR3_FPGA_V7_33Mbps_CL6xCWL6_256M.txt
+else
+MEM_INIT_FILE = C3711C_SIP_QFN68_DDR3_1188Mbps_CL9xCWL7_128M.txt
+endif
+
+endif
+
+
+ifdef _USE_64M_MEM_
+	BOOTCFG35=boot_3711c_64M.cfg
+	SIGPARA2=64M
+	LOGOFILE=Logo_glass.m2v
+else
+	ifdef _SUPPORT_256M_MEM
+		BOOTCFG35=boot_3711c_256M.cfg
+		SIGPARA2=256M
+	else
+		BOOTCFG35=boot_3711c_128M.cfg
+		SIGPARA2=128M
+	endif
+	LOGOFILE=logo_enriching.m2v
+endif
+
+ifdef _DD_SUPPORT
+	ifdef _SUPPORT_64M_MEM
+		PLUGIN_DEC = plugin_64M_single_t2.abs
+	else
+		ifdef _M36F_SINGLE_CPU
+			PLUGIN_DEC = plugin_128M_single_t2.abs
+		else
+			ifdef _USE_64M_MEM_
+				PLUGIN_DEC = plugin_64M_dual_t2.abs
+			else
+				ifdef _SUPPORT_256M_MEM
+					PLUGIN_DEC = plugin_256M_dual_t2.abs
+				else
+					PLUGIN_DEC = plugin_128M_dual_t2.abs
+				endif
+			endif
+		endif
+	endif
+endif
+
+
+ifdef _DVBS_ENABLE_
+	ifdef _DVBT_ENABLE_
+		DEF_DB = s2_t2.ddf
+	else
+		DEF_DB = s2.ddf
+	endif
+else
+ ifdef _DVBT_ENABLE_
+	DEF_DB = dvbt.ddf
+ else
+  ifdef _ISDBT_ENABLE_
+	DEF_DB=s2isdbt.ddf
+  else
+   ifdef _DVBC_ENABLE_
+	DEF_DB = s2dvbc.ddf
+   endif
+  endif
+ endif
+endif
+
+LIB_HDMI = $(DDK_DIR)/libHDMI_t2.a
+
+ifdef _HTTPS_ENABLE_ 
+export OPENSSL_LIB = ${BASE_DIR}/ddkt2/libopenssl/libssl.a ${BASE_DIR}/ddkt2/libopenssl/libcrypto.a
+endif
+
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+TOOLS            = tools/tools_linux
+PADDING          = padding_nv
+SECURE1         = Secure_1
+VERSION_APPENDER = version_appender_nv
+SBP_SIGN_TEST    = sbp_sign_test_nv
+MERGER           = merger_nv
+SSD_SIGN_TEST    = ssd_sign_test_nv
+BL_TOOL          = bl_tool
+BL_TOOL1	 = bl_tool1
+AS_TOOL	         = as_tool
+AS_TOOL1         = ALiCrypto
+else
+TOOLS = tools
+PADDING          = padding_nv.exe
+SECURE1         = Secure_1.exe
+VERSION_APPENDER = version_appender_nv.exe
+SBP_SIGN_TEST    = sbp_sign_test_nv.exe
+MERGER           = merger_nv.exe
+SSD_SIGN_TEST    = ssd_sign_test_nv.exe
+BL_TOOL          = bl_tool.exe
+BL_TOOL1				 = bl_tool1.exe
+AS_TOOL					 = ALiCrypto.exe
+endif
+
+ifdef _CAS9_CA_ENABLE_
+merge_tool_t = fidmerger_ca
+else
+    ifdef _BC_CA_ENABLE_
+		ifdef _SMI_ENABLE_
+            merge_tool_t = fidmerger_ca
+		else
+			merge_tool_t = fidmerger_ca
+		endif
+    else
+        ifdef _BC_CA_STD_ENABLE_
+            merge_tool_t = fidmerger_ca
+        else
+            ifdef _GEN_CA_ENABLE_
+                merge_tool_t = fidmerger_ca
+            else
+            	ifdef _C1800A_CA_ENABLE_
+            		merge_tool_t = fidmerger_ca
+            	else
+					merge_tool_t = fidmerger
+				endif
+			endif
+    	endif
+endif
+endif
+
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+merge_tool = $(merge_tool_t)
+else
+merge_tool = $(merge_tool_t).exe
+endif
+
+IRD_LOADER_SPI =
+IRD_LOADER_BL =
+IRD_LOADER_APP =
+IRD_VD =
+ifdef _C1800A_LOADERCORE_ENABLE_
+  IRD_LOADER_SPI = $(DDK_DIR)/libird_blcore_spi.a
+  IRD_LOADER_BL  = $(DDK_DIR)/libird_blcore_bl.a
+  IRD_LOADER_APP  = $(DDK_DIR)/libird_blcore_app.a
+  IRD_VD = $(DDK_DIR)/libird_vd.a
+endif
+
+ifdef _WIFI_ENABLE_
+ifdef _WIFI_MT7601_ENABLE_
+ifdef _WIFI_DIRECT_ENABLE_
+	USB_WIFI_7601_LIB = $(DDK_DIR)/wifi/lib_mt7601_p2p_gusb_t2.a
+else
+	USB_WIFI_7601_LIB = $(DDK_DIR)/wifi/lib_mt7601_gusb_t2.a
+endif
+endif
+ifdef _WIFI_RT5370_ENABLE_
+	USB_WIFI_LIB = $(DDK_DIR)/wifi/lib_rt5370_gusb_t2.a
+endif
+ifdef _WIFI_RTL8188_ENABLE_
+	USB_WIFI_8188_LIB = $(DDK_DIR)/wifi/lib_rtl8188_gusb_t2.a
+endif
+	NET_CTRL_LIB = $(DDK_DIR)/wifi/*.o
+	NET_LINK = $(shell ls ${NET_CTRL_LIB})
+endif
+
+ifdef _USB_ETHERNET_ENABLE_
+	USB_ETHERNET_LIB = $(DDK_DIR)/wifi/lib_usb_etnernet_t2.a
+endif
+
+ifdef _USB3G_SUPPORT_
+	USB_3G_LIB = $(DDK_DIR)/ali_3g/lib_3g_modem_t2.a
+endif
+
+ifdef _ALI_CAST_
+	ALICAST_LIB = $(DDK_DIR)/wfd/libnmpwfd_t2.a $(DDK_DIR)/wfd/libhdcp2_t2.a $(DDK_DIR)/wfd/libopenssl_t2.a #$(DDK_DIR)/wfd/lib_ali_pthread_t2.a
+endif
+
+all :
+	${MAKE} -f ${MAKEFILE_CMD} release
+	${MAKE} -f ${MAKEFILE_CMD} all
+
+path:
+	./getpath.sh
+
+ui :
+	${MAKE} -f ${MAKEFILE_CMD} all
+
+linkonly :
+	${MAKE} -f ${MAKEFILE_CMD} linkonly
+
+cfg_env_3711c:
+ifdef OS_IS_LINUX
+	sed -i 's/^#_LINUX_COMPILER_ENVIRONMENT_ = 1/_LINUX_COMPILER_ENVIRONMENT_ = 1/' compiler_3711c.def
+	sed -i 's/^_CYGWIN_COMPILER_ENVIRONMENT_ = 1/#_CYGWIN_COMPILER_ENVIRONMENT_ = 1/' compiler_3711c.def
+endif
+ifdef OS_IS_CYGWIN
+	sed -i 's/^_LINUX_COMPILER_ENVIRONMENT_ = 1/#_LINUX_COMPILER_ENVIRONMENT_ = 1/' compiler_3711c.def
+	sed -i 's/^#_CYGWIN_COMPILER_ENVIRONMENT_ = 1/_CYGWIN_COMPILER_ENVIRONMENT_ = 1/' compiler_3711c.def
+endif
+
+config_3711c_common : cfg_env_3711c
+	cp -f ${SYS_CONFIG_H} ${ROOT}/inc/sys_config.h
+	cp -f ${SYS_MEMMAP_H} ${ROOT}/inc/sys_memmap.h
+	cp -f ${COMPILER_DEF} ${ROOT}/src/compiler.def
+	cp -f ${PMU_SRC}/ali_pmu_bin_3711c.h  ./ali_pmu_bin.h
+	${MAKE} -f ${MAKEFILE_CMD} logiscope
+	${MAKE} -f ${MAKEFILE_CMD} special_config
+
+config_3711c_nf :
+	cp -f ${COMPILER_DEF} ${ROOT}/src/compiler_nf.def
+	sed -i "s/-Wformat=2//g" ${ROOT}/src/compiler_nf.def
+#	sed -i "s/-D_FORTIFY_SOURCE=2//g" ${ROOT}/src/compiler_nf.def
+
+config_3711c : config_3711c_common
+	sed -i "s/0x80100000/0x80000200/g" ./ldscript_3711c.ld
+
+config_3711c_ota_common : cfg_env_3711c
+	cp -f ${SYS_CONFIG_H} ${ROOT}/inc/sys_config.h
+	cp -f ${SYS_MEMMAP_H} ${ROOT}/inc/sys_memmap.h
+	cp -f ${COMPILER_DEF} ${ROOT}/src/compiler.def
+	${MAKE} -f ${MAKEFILE_CMD} special_config
+
+	echo "" >> ${ROOT}/src/compiler.def
+	echo "_BUILD_OTA_E_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_OTA_E_" >> ${ROOT}/src/compiler.def
+
+config_3711c_ota : config_3711c_ota_common config_3711c_nf
+	sed -i "s/0x80100000/0x80000200/g" ./ldscript.ld
+
+config_3711c_usb_common : cfg_env_3711c
+	cp -f ${SYS_CONFIG_H} ${ROOT}/inc/sys_config.h
+	cp -f ${SYS_MEMMAP_H} ${ROOT}/inc/sys_memmap.h
+	cp -f ${COMPILER_DEF} ${ROOT}/src/compiler.def
+	echo "" >> ${ROOT}/src/compiler.def
+	echo "_BUILD_OTA_E_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_OTA_E_" >> ${ROOT}/src/compiler.def
+	echo "_BUILD_USB_LOADER_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_USB_LOADER_" >> ${ROOT}/src/compiler.def
+	echo "_BUILD_USB_LOADER_GEN = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_USB_LOADER_GEN" >> ${ROOT}/src/compiler.def
+
+config_3711c_usb_lc_common : cfg_env_3711c
+	cp -f ${SYS_CONFIG_H} ${ROOT}/inc/sys_config.h
+	cp -f ${SYS_MEMMAP_H} ${ROOT}/inc/sys_memmap.h
+	cp -f ${COMPILER_DEF} ${ROOT}/src/compiler.def
+	echo "" >> ${ROOT}/src/compiler.def
+	echo "_BUILD_OTA_E_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_OTA_E_" >> ${ROOT}/src/compiler.def
+
+config_3711c_usb : config_3711c_usb_common
+	sed -i "s/0x80100000/0x80000200/g" ./ldscript.ld
+
+config_3711c_ouc_common:config_3711c_usb_common
+	echo "_BUILD_OUC_LOADER_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_OUC_LOADER_" >> ${ROOT}/src/compiler.def
+
+config_3711c_lc_common:config_3711c_usb_lc_common
+	echo "_BUILD_OUC_LOADER_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_OUC_LOADER_" >> ${ROOT}/src/compiler.def
+
+config_3711c_ouc:config_3711c_ouc_common
+	sed -i "s/0x80100000/0x80000200/g" ./ldscript.ld	
+
+config_3711c_loadercore:config_3711c_lc_common
+	sed -i "s/0x80100000/0x80000200/g" ./ldscript.ld	
+	echo "_C1800A_LOADERCORE_ENABLE_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_C1800A_LOADERCORE_ENABLE_" >> ${ROOT}/src/compiler.def	
+	
+config_3711c_mpclient:config_3711c_ota
+	echo "_BUILD_USB_LOADER_RET2GAC = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_USB_LOADER_RET2GAC" >> ${ROOT}/src/compiler.def
+	echo "_BUILD_USB_LOADER_ = 1" >> ${ROOT}/src/compiler.def
+	echo "DEFS += -D_BUILD_USB_LOADER_" >> ${ROOT}/src/compiler.def
+
+# sync command only used for Ali internal testing.
+sync :
+	${MAKE} -f ${MAKEFILE_CMD} sync
+
+syncbl :
+	${MAKE} -f ${MAKEFILE_CMD} syncbl
+
+clean :
+	${MAKE} -f ${MAKEFILE_CMD} clean
+
+release :
+	${MAKE} -f ${MAKEFILE_CMD} release
+
+new :
+	${MAKE} -f ${MAKEFILE_CMD} new
+
+nim :
+	${MAKE} -f ${MAKEFILE_CMD} nim
+
+sat2ip_lib :
+	${MAKE} -f ${MAKEFILE_CMD} sat2ip_lib
+
+stdby_lib :
+	${MAKE} -f ${MAKEFILE_CMD} stdby_lib
+
+bc :
+	${MAKE} -f ${MAKEFILE_CMD} bc
+
+bc_clean :
+	${MAKE} -f ${MAKEFILE_CMD} bc_clean
+
+product_7z :
+	echo Step 1: Compiler application ...
+	${MAKE} all
+	echo Step 2: Compress application bin file ...
+	${MAKE} -f ${MAKEFILE_CMD} compress_7z
+	echo Step 3: Generate Flash file ...
+	${MAKE} -f ${MAKEFILE_CMD} generate_7z
+	cp -f product_sabbat_*.abs $(ROOT)/obj/
+	cp -f app.bin ../../../../../../loader.bin
+	cp -f app_see.bin ../../../../../../loader_see.bin
+	echo All finished-cp app->loader!
+
+define  compress_7z-cas9_ca_enable
+#	cp -f ${OUT} ${OUT}.bak
+#	cp -f ${SEE_OUT} ${SEE_OUT}.bak
+	mv ${OUT} ${OUT}.bak
+ifndef _USE_SIGNED_BL_SEE	
+	mv ${SEE_OUT} ${SEE_OUT}.bak
+endif
+
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+	cd ../prj/${TOOLS}; \
+	./code_build ../../../obj/${OUT}.map ../../../obj/${OUT}.bak ../../../obj/${OUT};
+ifndef _USE_SIGNED_BL_SEE	
+	cd ../prj/${TOOLS}; \
+	./code_build ../../../obj/${SEE_OUT}.map ../../../obj/${SEE_OUT}.bak ../../../obj/${SEE_OUT}
+endif	
+else
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${OUT}.map ../../obj/${OUT}.bak ../../obj/${OUT};
+ifndef _USE_SIGNED_BL_SEE	
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${SEE_OUT}.map ../../obj/${SEE_OUT}.bak ../../obj/${SEE_OUT}
+endif	
+endif
+
+ifndef _CAS9_VSC_ENABLE_
+	# Insert SEE_SW_PK to SEE_BL
+ifndef _USE_64M_MEM_
+  ifndef _SUPPORT_256M_MEM
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl_origin.abs ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs
+  else
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl_origin_256M.abs ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs
+  endif
+else
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl_origin_64M.abs ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs
+endif
+	# Get See pub key
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Extract_See_PK.cmd;
+	#mv -f ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.key.pub ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.pub
+	#rm -f ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.key.pub.txt
+	#mv -f ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.key.pub ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.pub
+	#rm -f ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.key.pub.txt
+	# Insert See pub key to original see bootloader
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Insert_SEE_SW_PK.cmd;
+	# Sign SEE_BL With SEE_ROOT_PK
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeRootPK_M3527.cmd;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs_s ${SEE_BL_OUT}
+
+	# Sign SEE_SW with SEE_SW_PK
+	cp ${SEE_OUT} ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeSwPK.cmd;
+	#for 3505 get length
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin_s ${SEE_OUT}
+else
+	#VSC Flow
+ifdef _USE_SIGNED_BL_SEE
+	#Use signed BL SEE
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	./see_bl_merge.sh ${TO_BESIGNED_SEE_BL} ${TO_BESIGNED_SEE_BL_SIG} 
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl_with_sign.abs ${SEE_BL_OUT}
+	cp -f ${SEE_BL_OUT} see_bl_vsc
+else
+	#ALI Signed VSC Flow -- fake
+	# Insert SEE_SW_PK to SEE_BL
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl_origin.abs ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs
+	# Get See pub key
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Extract_See_PK.cmd;
+	#mv -f ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.key.pub ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.pub
+	#rm -f ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.key.pub.txt
+	#mv -f ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.key.pub ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.pub
+	#rm -f ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.key.pub.txt
+	# Insert See pub key to original see bootloader
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Insert_VSC_LIB_PK.cmd;
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Insert_SEE_SW_PK.cmd;
+	# Sign SEE_BL With SEE_ROOT_PK
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeRootPK_M3527.cmd;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs_s ${SEE_BL_OUT}
+endif	
+
+ifdef _USE_SIGNED_BL_SEE
+	# Use signed SEE SW
+	rm -f ${SEE_OUT} 
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${SIGNED_APP_SEE}  ${SEE_OUT} 
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && ./see_sig_vsc_3505_new.sh ${SIGNED_APP_SEE}
+	cp -f ${SEE_OUT} see_sabbat_s3711c_vsc.abs
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${VSC_LIB_NAME} .	
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/C3505_download_cardless.ini .
+else	
+	# Sign SEE_SW with SEE_SW_PK -- fake
+	cp ${SEE_OUT} ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeSwPK.cmd;
+	#for 3505 get length
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin_s ${SEE_OUT}
+endif
+endif
+	#cp -f ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin_sl see_sabbat_s352x.sig
+	#cp -f ${ROOT_PRJ}/${CA_AP_DIR}/s3527_sabat.ini ./
+	#unix2dos s3527_sabat.ini
+	../prj/${TOOLS}/lzma e ${SEE_BL_OUT} ${SEE_BL_OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${SEE_OUT} ${SEE_OUT}.7z -lc0 -lp2
+	rm -f ${ROOT_PRJ}/see_bl.bin;
+	rm -f ${ROOT_PRJ}/app.bin;
+	rm -f ${ROOT_PRJ}/app_see.bin;
+	cp -f ${SEE_BL_OUT}.7z ${ROOT_PRJ}/see_bl.bin;
+	cp -f ${OUT}.7z ${ROOT_PRJ}/app.bin;
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin;
+
+ifdef _EROM_UPG_HOST_ENABLE_
+ifdef _CAS9_VSC_ENABLE_
+	cd ${ROOT_PRJ} && \
+	../../../../${TOOLS}/lzma e eromclient_M3527_vsc.abs eromclient_M3527.7z -lc0 -lp2
+else
+	cd ${ROOT_PRJ} && \
+	../../../../${TOOLS}/lzma e eromclient_M3527.abs eromclient_M3527.7z -lc0 -lp2 ;\
+	../../../../${TOOLS}/lzma e eromclient_M3527_see.abs eromclient_M3527_see.7z -lc0 -lp2
+endif
+endif
+endef
+
+define compress_7z-c1800a_ca_enable
+#	cp -f ${OUT} ${OUT}.bak
+#	cp -f ${SEE_OUT} ${SEE_OUT}.bak
+	mv ${OUT} ${OUT}.bak
+ifndef _USE_SIGNED_BL_SEE	
+	mv ${SEE_OUT} ${SEE_OUT}.bak
+endif	
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+	cd ../prj/${TOOLS}; \
+	./code_build ../../../obj/${OUT}.map ../../../obj/${OUT}.bak ../../../obj/${OUT};
+ifndef _USE_SIGNED_BL_SEE	
+	cd ../prj/${TOOLS}; \
+	./code_build ../../../obj/${SEE_OUT}.map ../../../obj/${SEE_OUT}.bak ../../../obj/${SEE_OUT}
+endif
+else
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${OUT}.map ../../obj/${OUT}.bak ../../obj/${OUT};
+ifndef _USE_SIGNED_BL_SEE	
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${SEE_OUT}.map ../../obj/${SEE_OUT}.bak ../../obj/${SEE_OUT}
+endif
+endif
+
+	# Sign SEE_SW with SEE_Root_PK
+ifndef _USE_SIGNED_BL_SEE	
+	cp ${SEE_OUT} ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin
+endif	
+	cd ${ROOT_PRJ}/${CA_AP_DIR}
+	#../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeSwPK.cmd;
+ifndef _USE_SIGNED_BL_SEE	
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin ${SEE_OUT}
+endif	
+
+	#unix2dos s3527_sabat.ini
+	#../prj/${TOOLS}/lzma e ${SEE_BL_OUT} ${SEE_BL_OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+ifndef _USE_SIGNED_BL_SEE	
+	../prj/${TOOLS}/lzma e ${SEE_OUT} ${SEE_OUT}.7z -lc0 -lp2
+endif	
+	#rm -f ${ROOT_PRJ}/see_bl.bin;
+	rm -f ${ROOT_PRJ}/app.bin;
+	rm -f ${ROOT_PRJ}/app_see.bin;
+	#cp -f ${SEE_BL_OUT}.7z ${ROOT_PRJ}/see_bl.bin;
+	cp -f ${OUT}.7z ${ROOT_PRJ}/app.bin;
+	cp -f ${ROOT_PRJ}/app.bin ${ROOT_PRJ}/app_orign.bin;
+	cat ${ROOT_PRJ}/app_orign.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/ctrdata/ree_sw_ctrdata.bin > ${ROOT_PRJ}/app_version.bin;
+#	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/padding.sh ${ROOT_PRJ}/padding.sh;
+#	${ROOT_PRJ}/padding.sh ${ROOT_PRJ}/app_version.bin ${ROOT_PRJ}/app.bin;
+	cp -f ${ROOT_PRJ}/app_version.bin ${ROOT_PRJ}/app.bin;
+ifndef _USE_SIGNED_BL_SEE		
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin;
+	cp -f ${ROOT_PRJ}/app_see.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/common/see_bin.abs;
+endif
+endef
+
+###skip code_build
+define compress_7z-gen_ca_enable
+	mv ${OUT} ${OUT}.bak
+ifndef _USE_SIGNED_BL_SEE	
+	mv ${SEE_OUT} ${SEE_OUT}.bak
+endif	
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+	cd ../prj/${TOOLS}; \
+	./code_build ../../../obj/${OUT}.map ../../../obj/${OUT}.bak ../../../obj/${OUT};
+ifndef _USE_SIGNED_BL_SEE	
+	cd ../prj/${TOOLS}; \
+	./code_build ../../../obj/${SEE_OUT}.map ../../../obj/${SEE_OUT}.bak ../../../obj/${SEE_OUT}
+endif
+else
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${OUT}.map ../../obj/${OUT}.bak ../../obj/${OUT};
+ifndef _USE_SIGNED_BL_SEE	
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${SEE_OUT}.map ../../obj/${SEE_OUT}.bak ../../obj/${SEE_OUT}
+endif
+endif
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+ifndef _USE_SIGNED_BL_SEE	
+	../prj/${TOOLS}/lzma e ${SEE_OUT} ${SEE_OUT}.7z -lc0 -lp2
+endif	
+	#rm -f ${ROOT_PRJ}/see_bl.bin;
+	rm -f ${ROOT_PRJ}/app.bin;
+	rm -f ${ROOT_PRJ}/app_see.bin;
+	cp -f ${OUT}.7z ${ROOT_PRJ}/app.bin;
+	cp -f ${ROOT_PRJ}/app.bin ${ROOT_PRJ}/app_orign.bin;
+	cat ${ROOT_PRJ}/app_orign.bin ${ROOT_PRJ}/gen_ap/generate_boot_total_abs/ctrdata/ree_sw_ctrdata.bin > ${ROOT_PRJ}/app_version.bin;
+#	cp -f ${ROOT_PRJ}/gen_ap/generate_boot_total_abs/padding.sh ${ROOT_PRJ}/padding.sh;
+#	${ROOT_PRJ}/padding.sh ${ROOT_PRJ}/app_version.bin ${ROOT_PRJ}/app.bin;
+	cp -f ${ROOT_PRJ}/app_version.bin ${ROOT_PRJ}/app.bin;
+ifndef _USE_SIGNED_BL_SEE		
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin;
+endif
+endef
+
+define  compress_7z-bc_ca_enable
+	mv ${OUT} ${OUT}.bak
+	mv ${SEE_OUT} ${SEE_OUT}.bak
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+	cd ../prj/${TOOLS}; \
+	./code_build  ../../../obj/${OUT}.map ../../../obj/${OUT}.bak ../../../obj/${OUT};\
+	./code_build  ../../../obj/${SEE_OUT}.map ../../../obj/${SEE_OUT}.bak ../../../obj/${SEE_OUT}
+else
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${OUT}.map ../../obj/${OUT}.bak ../../obj/${OUT};\
+	./code_build.exe ../../obj/${SEE_OUT}.map ../../obj/${SEE_OUT}.bak ../../obj/${SEE_OUT}
+endif	
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} VendorID_Sig.cmd;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/vendor_id.bin.sigf ${ROOT_PRJ}
+	# Insert SEE_SW_PK to SEE_BL
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl_origin.abs ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs
+	# Get See pub key
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Extract_See_PK.cmd;
+	mv -f ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.key.pub ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.pub
+	rm -f ${ROOT_PRJ}/${CA_AP_DIR}/see_test_pair.key.pub.txt
+	mv -f ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.key.pub ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.pub
+	rm -f ${ROOT_PRJ}/${CA_AP_DIR}/see_sw_pair.key.pub.txt
+	# Insert See pub key to original see bootloader
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Insert_SEE_SW_PK.cmd;
+	# Sign SEE_BL With SEE_ROOT_PK
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeRootPK_M3527.cmd;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.abs_s ${SEE_BL_OUT}
+	# Sign SEE_SW with SEE_Root_PK
+	cp ${SEE_OUT} ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeSwPK.cmd;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin_s ${SEE_OUT}
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/app_see_clear.bin_sl see_sabbat_s3711c.sig
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/s3505_sabat.ini ./
+	unix2dos s3505_sabat.ini
+	../prj/${TOOLS}/lzma e ${SEE_BL_OUT} ${SEE_BL_OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${SEE_OUT} ${SEE_OUT}.7z -lc0 -lp2
+	rm -f ${ROOT_PRJ}/see_bl.bin;
+	rm -f ${ROOT_PRJ}/app.bin;
+	rm -f ${ROOT_PRJ}/app_see.bin;	
+	cp -f ${SEE_BL_OUT}.7z ${ROOT_PRJ}/see_bl.bin;
+	cp -f ${OUT}.7z ${ROOT_PRJ}/app.bin;
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin;
+	${ROOT_PRJ}/padding.exe ${ROOT_PRJ}/see_bl.bin ${ROOT_PRJ}/see_bl_to_be_signed.bin
+	${ROOT_PRJ}/padding.exe ${ROOT_PRJ}/app.bin ${ROOT_PRJ}/app_to_be_signed.bin
+	${ROOT_PRJ}/padding.exe ${ROOT_PRJ}/app_see.bin ${ROOT_PRJ}/app_see_to_be_signed.bin
+endef
+
+define  compress_7z-smi_enable
+	mv ${OUT} ${OUT}.bak
+	mv ${SEE_OUT} ${SEE_OUT}.bak
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+	cd ../prj/${TOOLS}; \
+	./code_build ../../../obj/${OUT}.map ../../../obj/${OUT}.bak ../../../obj/${OUT};\
+	./code_build ../../../obj/${SEE_OUT}.map ../../../obj/${SEE_OUT}.bak ../../../obj/${SEE_OUT}
+else
+	cd ../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${OUT}.map ../../obj/${OUT}.bak ../../obj/${OUT};\
+	./code_build.exe ../../obj/${SEE_OUT}.map ../../obj/${SEE_OUT}.bak ../../obj/${SEE_OUT}
+endif
+	# Insert SEE_SW_PK to SEE_BL
+	cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/see_bl_origin.abs ${ROOT_PRJ}/${SMI_AP_DIR}/see_bl.abs
+	# Get See pub key
+	cd ${ROOT_PRJ}/${SMI_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Extract_See_PK.cmd;
+	#mv -f ${ROOT_PRJ}/${SMI_AP_DIR}/see_test_pair.key.pub ${ROOT_PRJ}/${SMI_AP_DIR}/see_test_pair.pub
+	#rm -f ${ROOT_PRJ}/${SMI_AP_DIR}/see_test_pair.key.pub.txt
+	#mv -f ${ROOT_PRJ}/${SMI_AP_DIR}/see_sw_pair.key.pub ${ROOT_PRJ}/${SMI_AP_DIR}/see_sw_pair.pub
+	#rm -f ${ROOT_PRJ}/${SMI_AP_DIR}/see_sw_pair.key.pub.txt
+	# Insert See pub key to original see bootloader
+	cd ${ROOT_PRJ}/${SMI_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} Insert_SEE_SW_PK.cmd;
+	# Sign SEE_BL With SEE_ROOT_PK
+	cd ${ROOT_PRJ}/${SMI_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeRootPK_M3527.cmd;
+	cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/see_bl.abs_s ${SEE_BL_OUT}
+
+	# Sign SEE_SW with SEE_Root_PK
+	cp ${SEE_OUT} ${ROOT_PRJ}/${SMI_AP_DIR}/app_see_clear.bin
+	cd ${ROOT_PRJ}/${SMI_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL} SEE_Sign_with_SeeSwPK.cmd;
+	cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/app_see_clear.bin_s ${SEE_OUT}
+	cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/app_see_clear.bin_sl see_sabbat_s3711c.sig
+	cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/s3505_sabat.ini ./
+	unix2dos s3505_sabat.ini
+	../prj/${TOOLS}/lzma e ${SEE_BL_OUT} ${SEE_BL_OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${SEE_OUT} ${SEE_OUT}.7z -lc0 -lp2
+	rm -f ${ROOT_PRJ}/see_bl.bin;
+	rm -f ${ROOT_PRJ}/app.bin;
+	rm -f ${ROOT_PRJ}/app_see.bin;
+	cp -f ${SEE_BL_OUT}.7z ${ROOT_PRJ}/see_bl.bin;
+	cp -f ${OUT}.7z ${ROOT_PRJ}/app.bin;
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin;
+	${ROOT_PRJ}/padding.exe ${ROOT_PRJ}/see_bl.bin ${ROOT_PRJ}/see_bl_to_be_signed.bin
+	${ROOT_PRJ}/padding.exe ${ROOT_PRJ}/app.bin ${ROOT_PRJ}/app_to_be_signed.bin
+	${ROOT_PRJ}/padding.exe ${ROOT_PRJ}/app_see.bin ${ROOT_PRJ}/app_see_to_be_signed.bin
+endef
+
+define compress_7z-normal
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+	../prj/${TOOLS}/lzma e ${SEE_OUT} ${SEE_OUT}.7z -lc0 -lp2
+endef
+
+define compress_7z-compress_lzo
+	../prj/${TOOLS}/lzox99 ${OUT} ${OUT}.7z
+	../prj/${TOOLS}/lzox99 ${SEE_OUT} ${SEE_OUT}.7z
+endef
+
+define dual_compress_7z
+compress_7z :
+	${OBJCOPY} -R .flash -O binary ${OUT}.out ${OUT};
+#	-${OBJCOPY} -j .flash -O binary ${OUT}.out flash.sec;
+ifndef _USE_SIGNED_BL_SEE	
+	${OBJCOPY} -R .flash -O binary ${SEE_OUT}.out ${SEE_OUT};
+#	-${OBJCOPY} -j .flash -O binary ${SEE_OUT}.out see_flash.sec;
+endif
+	rm -f ${OUT}.7z;
+	rm -f ${SEE_OUT}.7z;
+
+
+ifdef _DD_SUPPORT
+
+	echo "dual_cpu_dd_merge"
+	rm -f ${PLUG_M_SH};
+	cp ${ROOT_PRJ}/${PLUG_M_SH} ${LIB_DIR};
+ifdef _DD_DDPLUS_SIGNATURE
+	@echo "========test DD SIGN========"
+	cp -f ${PLUGIN_PATH}/${PLUGIN_DEC} ${SIGNATURE_DIR}
+	cd ${SIGNATURE_DIR};\
+	./plugin_sign.sh './ALiCrypto' ${PLUGIN_DEC} 'test_pair.key' 'id.bin';\
+	cp -f ${PLUGIN_DEC} ${PLUGIN_PATH}/${PLUGIN_DEC}
+endif
+	cp ${PLUGIN_PATH}/${PLUGIN_DEC} ${LIB_DIR}/plugin_dec.abs
+	./${PLUG_M_SH} ${OUT}
+	rm ${LIB_DIR}/plugin_dec.abs
+endif
+
+
+ifdef _CAS9_CA_ENABLE_
+	$(call compress_7z-cas9_ca_enable)
+else
+ifdef _C1800A_CA_ENABLE_
+	$(call compress_7z-c1800a_ca_enable)
+else
+ifdef _BC_CA_ENABLE_
+ifdef _SMI_ENABLE_
+	$(call compress_7z-smi_enable)
+else
+	$(call compress_7z-bc_ca_enable)
+endif
+else
+ifdef _GEN_CA_ENABLE_
+ifdef _SMI_ENABLE_
+	$(call compress_7z-smi_enable)
+else
+	$(call compress_7z-gen_ca_enable)
+endif
+else
+ifdef _BUILD_OTA_E_
+	$(call compress_7z-normal)
+else
+ifdef _COMPRESS_LZO
+	$(call compress_7z-compress_lzo)
+else
+	$(call compress_7z-normal)
+endif #_COMPRESS_LZO
+endif #_BUILD_OTA_E_
+endif #_GEN_CA_ENABLE_
+endif	#_BC_CA_ENABLE_
+endif   #_C1800A_CA_ENABLE_
+endif	#_CAS9_CA_ENABLE_
+endef
+
+pre_boot_total_area_cas9:
+	$(call pre_boot_total_area-cas9_ca_enable)
+
+define pre_boot_total_area-cas9_ca_enable
+### pre generate the boot total area
+ifdef _C0700A_VSC_ENABLE_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/../c0700a_ap/AUX_Code_Enc_demo_C3711C_c0700a_vsc.abs ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/AUX_Code_Enc_demo.abs;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/../c0700a_ap/AUX_Code_Hash_demo_C3711C_c0700a_vsc.abs ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/AUX_Code_Hash_demo.abs;
+else
+ifdef _C1200A_ENABLE_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/../c1200a_ap/AUX_Code_Enc_demo_C3711C_c1200a.abs ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/AUX_Code_Enc_demo.abs;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/../c1200a_ap/AUX_Code_Hash_demo_C3711C_c1200a.abs ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/AUX_Code_Hash_demo.abs;
+else
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Enc_demo_C3711C.abs ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/AUX_Code_Enc_demo.abs;
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Hash_demo_C3711C.abs ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/AUX_Code_Hash_demo.abs;
+endif
+endif
+	cp -f ${ROOT_PRJ}/${BOOTLOADER_MA} ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/bl_in.abs
+	cp -f ${ROOT_PRJ}/${DDR_PATH}/${MEM_INIT_FILE} ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/${FINAL_MEM_INIT}
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && chmod +wx padding_memory_split.sh &&\
+	./padding_memory_split.sh ${BOOT_CFG} ${FINAL_MEM_INIT}
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${BL_GEN_CMD} ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/BL_MERGE.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${INCERT_UK_CMD} ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/Insert_Decrypt_UK.cmd
+endef
+
+pre_boot_code:
+	${MAKE} -f ${MAKEFILE_CMD} pre_boot_code
+
+pre_boot_total_area:
+	${MAKE} -f ${MAKEFILE_CMD} pre_boot_total_area
+
+
+define generate_7z-cas9_ca_enable
+# Merge the bootloader
+ifdef _ENABLE_ALI_DEMO_KEY_DEBUG_
+#	@cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Enc_demo_M3527.abs ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Enc_demo.abs;
+#	@cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_sign_demo_M3527_ali.abs ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_sign_demo_ali.abs;
+	$(call pre_boot_total_area-cas9_ca_enable)
+#	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+#	../../../../../${TOOLS}/${BL_TOOL1} AS_Merge_ALi.cmd;
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/bl_out.abs ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs
+	##gen to be sign
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	./bl_extract.sh ./boot_total_area.abs && \
+	mkdir -p to_be_sign && \
+	cp -f ext_rsa_pubkey_area*.bin 	./to_be_sign/ &&\
+	cp -f boot_aux_code_area*.bin 	./to_be_sign/ &&\
+	cp -f boot_params_area*.bin 	./to_be_sign/ &&\
+	cp -f boot_code_area*.bin 	./to_be_sign/
+else
+	#@cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Enc_demo_M3527.abs ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Enc_demo.abs;
+	#@cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_sign_demo_M3527_cnx.abs ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_sign_demo_cnx.abs;
+	#cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	#../../../../../${TOOLS}/${BL_TOOL1} AS_Merge_CA.cmd;
+
+	##merge signed bin.
+	@if [ -d "${ROOT_PRJ}/${CA_AP_DIR}/of_signed" ]; then \
+		cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+		cp -f ./of_signed/ext_rsa_pubkey_area.bin 		./ext_rsa_pubkey_area.bin 		&&\
+		cp -f ./of_signed/ext_rsa_pubkey_area_sig.bin 		./ext_rsa_pubkey_area_sig.bin 	&&\
+		cp -f ./of_signed/boot_aux_code_area_sig.bin 		./boot_aux_code_area_sig.bin 	&&\
+		cp -f ./of_signed/boot_params_area.bin 			./boot_params_area.bin 		&&\
+		cp -f ./of_signed/boot_params_area_sig.bin 		./boot_params_area_sig.bin 	&&\
+		cp -f ./of_signed/boot_code_area.bin 			./boot_code_area.bin 		&&\
+		cp -f ./of_signed/boot_code_area_sig.bin 			./boot_code_area_sig.bin 		&&\
+		./bl_merge.sh ./boot_total_area.abs;\
+	else \
+		echo -e "\nError, Cannot find the dir \"${ROOT_PRJ}/${CA_AP_DIR}/of_signed\"" &&\
+		echo -e "Please copy the signed abs to \"of_signed\" directory \n" &&\
+		exit 1;\
+	fi
+endif
+ifdef _ENABLE_BL_ENCRYPTED_
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/$(CA_AP_DIR)/BL_ori_toal.abs
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL1} BL_Encrypted_C3711C.cmd;
+endif
+
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/bloader3_3711c_sec_wh.abs
+ifndef _BUILD_OTA_E_
+ifdef _OUC_LOADER_IN_FLASH_
+	cp -f ${ROOT_PRJ}/${OUC_LOADER} ${ROOT_PRJ}/3711c_ouc_loader.bin
+endif
+endif
+
+ifdef _EROM_UPG_HOST_ENABLE_
+	cd ${ROOT_PRJ}; \
+	./universal_key_encrypt_M3711C.sh ${CA_AP_DIR}
+endif
+# Merge the firmware
+	cp -f ${ROOT_PRJ}/$(DEF_DB) ${ROOT_PRJ}/factory_data_sabbat.bin
+	cd ${ROOT_PRJ}; \
+	../../../../${TOOLS}/${merge_tool} ${BSP}
+# Sign and Encrypt the Main/See
+ifndef _BUILD_OTA_E_
+	cp -f ${ROOT_PRJ}/product_sabbat_*.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+ifdef _CAS9_VSC_ENABLE_
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} Insert_VSC_Chunk.cmd
+#./lo_tool -M1 ${VSC_LIB_NAME} product_sabbat_dual.abs 0CF30101
+endif
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_Sign_Enc_M3527_2key.cmd
+	
+ifdef _CAS9_VSC_ENABLE_
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_gen_dynamic_chunk_VSC.cmd
+else
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_gen_dynamic_chunk.cmd
+endif	
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_*.abs ${ROOT_PRJ}/
+	cd ${ROOT_PRJ} ;\
+	../../../../${TOOLS}/uk_encrypt product_sabbat_dual.abs product_sabbat_dual_ukenc.abs
+else
+	cp -f ${ROOT_PRJ}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_OTA_Sign_Enc_2key.cmd
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_OTA_padding.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/
+ifdef _OUC_LOADER_IN_FLASH_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${OUC_LOADER}
+endif
+endif
+endef
+
+define generate_7z-c1800a_ca_enable
+# Merge the bootloader
+ifdef _ENABLE_ALI_DEMO_KEY_DEBUG_
+
+	$(call pre_boot_total_area-cas9_ca_enable)
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	cp -rf ../../../../../../${TOOLS}/ALiCrypto* ./tool_linux/ && \
+	cp -rf ../../../../../../${TOOLS}/bl_tool* ./tool_linux/ && \
+	cp -rf ../../../../../../${TOOLS}/ALiCrypto* ./tool/ && \
+	cp -rf ../../../../../../${TOOLS}/bl_tool* ./tool/ && \
+	cp -rf ./../sys_sw_p* ./keys/ && \
+	cp -rf ./../BL_Encrypted.bin ./keys/ && \
+	cp -rf ./../public_2nd_level.key ./keys/ && \
+	cp -rf ./../ext_key_pair.der ./keys/ && \
+	cp -rf ./../root_key_pair.der ./keys/ && \
+	../../../../../../${TOOLS}/${BL_TOOL} BL_MERGE_M3711C.cmd;
+	#merge boot total area ok
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/to_be_sign  && \
+	rm -rf ./boot_*.bin  && \
+	rm -rf ./ext_rsa*.bin  && \
+	cp -rf ./../bl.in ./boot_total_area_sign.abs && \
+	cp -rf ./../bl_extract.sh ./bl_extract.sh && \
+	cp -rf ./../bl_merge.sh ./bl_merge.sh && \
+	cp -rf ./../util.sh ./util.sh && \
+	./bl_extract.sh boot_total_area_sign.abs;
+#	./bl_merge.sh boot_total_area.abs && \
+#	cp -rf ./boot_total_area.abs ./../bl.in;
+
+#	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/bl_out.abs ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}
+	
+else
+	
+	##merge signed bin.
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/of_signed  && \
+	cp -rf ./../bl_extract.sh ./bl_extract.sh && \
+	cp -rf ./../bl_merge.sh ./bl_merge.sh && \
+	cp -rf ./../util.sh ./util.sh && \
+	./bl_merge.sh boot_total_area.abs && \
+	cp -rf ./boot_total_area.abs ./../bl.in;
+
+endif
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	cp -rf ./../decrypt_key.bin ./decrypt_key.bin && \
+	../../../../../../${TOOLS}/${AS_TOOL} Insert_Decrypt_UK.cmd && \
+	rm -rf ./../temporary && \
+	mkdir -p ./../temporary;
+ifdef _ENABLE_BL_ENCRYPTED_
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	cp -rf ./boot_total_area.abs ./boot_total_area_clear.abs && \
+	cp -rf ./boot_total_area.abs ./boot_total_area_encrypt.abs && \
+	../../../../../../${TOOLS}/${BL_TOOL} BL_Encrypted_C3711C.cmd && \
+	cp -rf ./boot_total_area_encrypt.abs ./boot_total_area.abs;
+endif
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	cp -rf ./boot_total_area.abs ./../temporary/boot_total_area.abs && \
+	cp -rf ./boot_total_area.abs ./../temporary/boot_total_area_one.abs;
+	# start generate total area
+
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${SIGNED_IFCP_BL} ${ROOT_PRJ}/${CA_AP_DIR}/ifcp_bl.ubo
+ifdef _USE_SIGNED_BL_SEE
+	cat ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/boot_total_area.abs ${ROOT_PRJ}/${CA_AP_DIR}/tee_total_area.abs > ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs
+else
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	./generate_boot_total_area_linux.sh
+else
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	./generate_boot_total_area.sh
+endif
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/temporary/boot_total_area_ok.abs ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs
+endif
+
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/bloader3_3711c_sec_wh.abs
+ifndef _BUILD_OTA_E_
+ifdef _OUC_LOADER_IN_FLASH_
+ifndef _ENABLE_ALI_DEMO_KEY_DEBUG_
+	#merge loadercore from CA signed
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/; \
+	./merge_signed_loadercore.sh
+	cp -rf ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/of_signed/loader_core.sign.mergeok ${ROOT_PRJ}/3711c_ouc_loader.bin
+else
+	cp -f ${ROOT_PRJ}/${OUC_LOADER} ${ROOT_PRJ}/3711c_ouc_loader.bin
+endif
+endif
+endif
+
+ifdef _USE_SIGNED_BL_SEE
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${SIGNED_APP_SEE}  ${ROOT_PRJ}/${CA_AP_DIR}/see.ubo
+endif
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl.ubo ${ROOT_PRJ}/see_bl.ubo
+ifdef _BUILD_OTA_E_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see.ubo ${ROOT_PRJ}/app_see.ubo
+else
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see.ubo ${ROOT_PRJ}/see.ubo
+endif
+
+# Merge the firmware
+	cp -f ${ROOT_PRJ}/$(DEF_DB) ${ROOT_PRJ}/factory_data_sabbat.bin
+	cd ${ROOT_PRJ}; \
+	../../../../${TOOLS}/${merge_tool} ${BSP}
+# Sign and Encrypt the Main
+ifndef _BUILD_OTA_E_
+	cp -f ${ROOT_PRJ}/product_sabbat_*.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_Sign_Enc_M3711C.cmd
+	
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_*.abs ${ROOT_PRJ}/
+else
+	#OTA PART
+	cp -f ${ROOT_PRJ}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+	#3711c loader for CA sign and enc flow
+ifdef _ENABLE_ALI_DEMO_KEY_DEBUG_
+	cp -f ${ROOT_PRJ}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/3721L_ouc_loader_for_sign.bin
+	cp -f ${ROOT_PRJ}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/3721L_ouc_loader_for_enc.bin
+	cp -f ${ROOT_PRJ}/3721L_ouc_loader_for_sign.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/to_be_sign
+	cp -f ${ROOT_PRJ}/3721L_ouc_loader_for_enc.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/to_be_sign
+endif
+ifdef _C1800A_LOADERCORE_ENABLE_	
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL1} Sign_by_ext_key_pair.cmd
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_OTA_padding.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/3721L_ouc_loader_sig.bin ${ROOT_PRJ}/product_sabbat_dual_ota.abs
+ifdef _OUC_LOADER_IN_FLASH_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/3721L_ouc_loader_sig.bin ${ROOT_PRJ}/${OUC_LOADER}
+endif
+else
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_OTA_Sign_Enc_M3711C.cmd
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_OTA_padding.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/
+ifdef _OUC_LOADER_IN_FLASH_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${OUC_LOADER}
+endif
+endif
+endif
+endef
+
+
+define generate_7z-gen_ca_enable
+# Merge the bootloader
+ifdef _ENABLE_ALI_DEMO_KEY_DEBUG_
+	$(call pre_boot_total_area-cas9_ca_enable)
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	cp -rf ../../../../../../${TOOLS}/ALiCrypto* ./tool_linux/ && \
+	cp -rf ../../../../../../${TOOLS}/bl_tool* ./tool_linux/ && \
+	cp -rf ../../../../../../${TOOLS}/ALiCrypto* ./tool/ && \
+	cp -rf ../../../../../../${TOOLS}/bl_tool* ./tool/ && \
+	cp -rf ./../sys_sw_p* ./keys/ && \
+	cp -rf ./../flashprotectionkey.bin ./keys/ && \
+	cp -rf ./../public_2nd_level.key ./keys/ && \
+	cp -rf ./../ext_key_pair.der ./keys/ && \
+	cp -rf ./../root_key_pair.der ./keys/ && \
+	cp -rf ./../decrypt_key.bin ./keys/ && \
+	../../../../../../${TOOLS}/${AS_TOOL} Hash_Enc.cmd && \
+	../../../../../../${TOOLS}/${BL_TOOL} BL_MERGE.cmd;
+	#merge boot total area ok
+
+	##gen to be sign	
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	./bl_extract_C3711C.sh boot_total_area.abs to_be_sign && \
+	cat AUX_Code_Hash_Rsade_demo.abs AUX_Code_Hash_demo.abs > to_be_sign/boot_aux_code_hash_for_sign.bin;
+	
+	
+else
+	##merge signed bin.
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/of_signed  && \
+	cp -rf ./../bl_merge.sh ./bl_merge.sh && \
+	cp -rf ./../util.sh ./util.sh && \
+	./bl_merge.sh boot_total_area.abs && \
+	cp -rf ./boot_total_area.abs ./../boot_total_area.abs;
+
+endif
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	cp -rf ./../decrypt_key.bin ./decrypt_key.bin && \
+	cp -rf ./boot_total_area.abs ./bl.in && \
+	../../../../../../${TOOLS}/${AS_TOOL} Insert_Decrypt_UK.cmd && \
+	rm -rf ./../temporary && \
+	mkdir -p ./../temporary;
+ifdef _ENABLE_BL_ENCRYPTED_
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && \
+	cp -rf ./boot_total_area.abs ./boot_total_area_clear.abs && \
+	cp -rf ./boot_total_area.abs ./boot_total_area_encrypt.abs && \
+	../../../../../../${TOOLS}/${BL_TOOL} BL_Encrypted_C3711C.cmd && \
+	cp -rf ./boot_total_area_encrypt.abs ./boot_total_area.abs;
+endif
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/generate_boot_total_abs/boot_total_area.abs ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/bloader3_3711c_sec_wh.abs
+
+ifndef _BUILD_OTA_E_
+ifdef _OUC_LOADER_IN_FLASH_
+	cp -f ${ROOT_PRJ}/${OUC_LOADER} ${ROOT_PRJ}/3711c_ouc_loader.bin
+endif
+endif
+
+ifdef _EROM_UPG_HOST_ENABLE_
+	cd ${ROOT_PRJ}; \
+	./universal_key_encrypt_M3711C.sh ${CA_AP_DIR}
+endif
+
+ifdef _C0700A_VSC_ENABLE_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/../c0700a_ap/see_bl_C3711C_c0700a_vsc.abs ${ROOT_PRJ}/${SEE_BL_OUT}.bin
+else
+ifdef _C1200A_ENABLE_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/../c1200a_ap/see_bl_C3711C_c1200a.abs ${ROOT_PRJ}/${SEE_BL_OUT}.bin
+else
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/see_bl_C3711C.abs ${ROOT_PRJ}/${SEE_BL_OUT}.bin
+endif
+endif
+ifdef _USE_SIGNED_BL_SEE
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${SIGNED_APP_SEE}  ${ROOT_PRJ}/${CA_AP_DIR}/app_see.bin
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/app_see.bin  ${ROOT_PRJ}/app_see.bin
+	
+	cp -f ${ROOT_PRJ}/app_see.bin ${ROOT_PRJ}/../../../../../obj/app_see_3711c.bin
+	cp -f ${ROOT_PRJ}/${SEE_BL_OUT}.bin ${ROOT_PRJ}/../../../../../obj/see_bl_3711c.abs
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/secure_loader.abs ${ROOT_PRJ}/../../../../../obj/secure_loader_3711c.abs
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/${BOOT_CFG} ${ROOT_PRJ}/../../../../../obj/boot_3711c.cfg
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/replace_file_size.sh   ${ROOT_PRJ}/
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/C3711C_download_acs.ini   ${ROOT_PRJ}/C3711C_download_acs.ini
+	cd ${ROOT_PRJ}; \
+	./replace_file_size.sh ${SEE_BL_OUT}.bin app_see.bin C3711C_download_acs.ini
+	cp -f ${ROOT_PRJ}/replace_C3711C_download_acs.ini  ${ROOT_PRJ}/../../../../../obj/C3711C_download_acs.ini	
+	rm -f ${ROOT_PRJ}/C3711C_download_acs.ini
+	rm -f ${ROOT_PRJ}/replace_C3711C_download_acs.ini
+else
+	cp -f ${ROOT_PRJ}/app_see.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/common/see_bin.abs
+ifdef _C0700A_VSC_ENABLE_	
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && chmod +wx generate_see_sig_c3711c_other.sh &&\
+	./generate_see_sig_c3711c_other.sh
+else
+ifdef _C1200A_ENABLE_
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && chmod +wx generate_see_sig_c3711c_other.sh &&\
+	./generate_see_sig_c3711c_other.sh
+else
+	cd ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs && chmod +wx generate_see_sig_c3711c.sh &&\
+	./generate_see_sig_c3711c.sh
+endif
+endif
+endif
+	
+# Merge the firmware
+	cp -f ${ROOT_PRJ}/$(DEF_DB) ${ROOT_PRJ}/factory_data_sabbat.bin
+	cd ${ROOT_PRJ}; \
+	../../../../${TOOLS}/${merge_tool} ${BSP}
+# Sign and Encrypt the Main
+ifndef _BUILD_OTA_E_
+	cp -f ${ROOT_PRJ}/product_sabbat_*.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+
+ifdef _C0700A_VSC_ENABLE_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/../c0700a_ap/*.cmd ${ROOT_PRJ}/${CA_AP_DIR}/
+ifdef _ENABLE_ALI_DEMO_KEY_DEBUG_	
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_Sign_M3711C.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/ID_0x01fe0101.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/to_be_sign/ID_0x01fe0101.bin
+else
+	# merge chunk data and signature
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/of_signed/ID_0x01fe0101*.bin ${ROOT_PRJ}/${CA_AP_DIR}/
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_Insert_Sign_M3711C.cmd
+endif
+
+	#must use BL tool to do enc
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual.abs ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_clear.abs
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_Enc_M3711C.cmd
+
+else
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_Sign_Enc_M3711C.cmd
+endif	
+	
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_*.abs ${ROOT_PRJ}/
+else
+	#OTA PART
+	cp -f ${ROOT_PRJ}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+
+ifdef _C0700A_VSC_ENABLE_
+ifdef _ENABLE_ALI_DEMO_KEY_DEBUG_	
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_OTA_Sign_M3711C.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/ID_0x00ff0000.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/to_be_sign/ID_0x00ff0000.bin
+else
+# merge chunk data and signature
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/of_signed/ID_0x00ff0000*.bin ${ROOT_PRJ}/${CA_AP_DIR}/
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_OTA_Insert_Sign_M3711C.cmd
+endif
+#must use BL tool to do enc
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota_clear.abs
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_OTA_Enc_M3711C.cmd
+else
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_OTA_Sign_Enc_M3711C.cmd
+endif	
+
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${AS_TOOL} FW_OTA_padding.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/
+ifdef _OUC_LOADER_IN_FLASH_
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${OUC_LOADER}
+endif
+endif
+endef
+
+
+
+define generate_7z-bc_ca_enable
+
+ifdef _ENABLE_BL_ENCRYPTED_
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/$(CA_AP_DIR)/BL_ori_toal.abs
+	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL1} BL_Encrypted_C3711C.cmd;
+endif
+
+	cp -f ${ROOT_PRJ}/$(CA_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/bloader3_3711c_sec_wh.abs
+ifdef _EROM_UPG_HOST_ENABLE_	
+	cd ${ROOT_PRJ}; \
+	./universal_key_encrypt_M3711C.sh ${CA_AP_DIR}
+endif	
+# Merge the firmware
+	cp -f ${ROOT_PRJ}/$(DEF_DB) ${ROOT_PRJ}/factory_data_sabbat.bin
+	cd ${ROOT_PRJ}; \
+	../../../../${TOOLS}/${merge_tool} ${BSP}
+# Sign and Encrypt the Main/See
+ifndef _BUILD_OTA_E_
+	cp -f ${ROOT_PRJ}/product_sabbat_*.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_Sign_Enc_M3711C.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_*.abs ${ROOT_PRJ}/
+else
+	cp -f ${ROOT_PRJ}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${CA_AP_DIR}/
+	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_OTA_Sign_Enc.cmd
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/
+endif
+endef
+
+
+define generate_7z-smi_enable
+# Merge the bootloader
+ifdef _ENABLE_ALI_DEMO_KEY_DEBUG_
+#	@cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Enc_demo_M3527.abs ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_Enc_demo.abs;
+#	@cp -f ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_sign_demo_M3527_ali.abs ${ROOT_PRJ}/${CA_AP_DIR}/AUX_Code_sign_demo_ali.abs;
+	$(call pre_boot_total_area-cas9_ca_enable)
+#	cd ${ROOT_PRJ}/${CA_AP_DIR} && \
+#	../../../../../${TOOLS}/${BL_TOOL1} AS_Merge_ALi.cmd;
+	cp -f ${ROOT_PRJ}/$(SMI_AP_DIR)/bl_out.abs ${ROOT_PRJ}/$(SMI_AP_DIR)/boot_total_area.abs
+else
+	@cp -f ${ROOT_PRJ}/$SMI_AP_DIR}/AUX_Code_Enc_demo_M3527.abs ${ROOT_PRJ}/${SMI_AP_DIR}/AUX_Code_Enc_demo.abs;
+	@cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/AUX_Code_sign_demo_M3527_cnx.abs ${ROOT_PRJ}/${SMI_AP_DIR}/AUX_Code_sign_demo_cnx.abs;
+	cd ${ROOT_PRJ}/${SMI_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL1} AS_Merge_CA.cmd;
+endif
+ifdef _ENABLE_BL_ENCRYPTED_
+	cp -f ${ROOT_PRJ}/$(SMI_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/$(SMI_AP_DIR)/BL_ori_toal.abs
+	cd ${ROOT_PRJ}/${SMI_AP_DIR} && \
+	../../../../../${TOOLS}/${BL_TOOL1} BL_Encrypted_C3711C.cmd;
+endif
+
+	cp -f ${ROOT_PRJ}/$(SMI_AP_DIR)/boot_total_area.abs ${ROOT_PRJ}/bloader3_3711c_sec_wh.abs
+ifdef _EROM_UPG_HOST_ENABLE_	
+	cd ${ROOT_PRJ}; \
+	./universal_key_encrypt_M3711C.sh ${SMI_AP_DIR}
+endif	
+# Merge the firmware
+	cp -f ${ROOT_PRJ}/$(DEF_DB) ${ROOT_PRJ}/factory_data_sabbat.bin
+	cd ${ROOT_PRJ}; \
+	../../../../${TOOLS}/${merge_tool} ${BSP}
+# Sign and Encrypt the Main/See
+ifndef _BUILD_OTA_E_
+	cp -f ${ROOT_PRJ}/product_sabbat_*.abs ${ROOT_PRJ}/${SMI_AP_DIR}/
+	cd ${ROOT_PRJ}/${SMI_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_Sign_Enc_M3527.cmd
+	cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/product_sabbat_*.abs ${ROOT_PRJ}/
+else
+	cp -f ${ROOT_PRJ}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/${SMI_AP_DIR}/
+	cd ${ROOT_PRJ}/${SMI_AP_DIR}; \
+	../../../../../${TOOLS}/${BL_TOOL} FW_OTA_Sign_Enc.cmd
+	cp -f ${ROOT_PRJ}/${SMI_AP_DIR}/product_sabbat_dual_ota.abs ${ROOT_PRJ}/
+endif
+endef
+
+
+define generate_7z-normal
+	# generate_7z :normal flow
+	rm -f app_${OUT}.bin
+	cp -f ${OUT}.7z ${ROOT_PRJ}/app.bin
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin
+	cp -f ${ROOT_PRJ}/${DDR_PATH}/${MEM_INIT_FILE} ${ROOT_PRJ}/bloader_cmd/c3711c/${MEM_INIT_FILE}
+	rm -f ${ROOT_PRJ}/bloader3_3711c.abs
+	cp -f ${ROOT_PRJ}/${BOOTLOADER_MA} ${ROOT_PRJ}/bloader3_3711c_unify.abs
+	cp -f ${ROOT_PRJ}/${DDR_PATH}/${MEM_INIT_FILE} ${ROOT_PRJ}/${BL_CMD_PATH}/${FINAL_MEM_INIT}	
+	cd ${ROOT_PRJ}/${BL_CMD_PATH}; \
+	../../../../../../${TOOLS}/${BL_TOOL} ${BL_CMD}
+	cp -f ${ROOT_PRJ}/${BOOTLOADER_DDR} ${ROOT_PRJ}/bloader3_3711c_rt_unified.abs	
+#	cd ${ROOT_PRJ} && \
+#	./3711c_ret_bl_gen.sh "../../../../${TOOLS}/${BL_TOOL1}" "${BOOTLOADER_MA_RT}" "${MEM_INIT_FILE}"
+#	cp -f ${ROOT_PRJ}/bloader3_3711c_rt_gen.abs ${ROOT_PRJ}/bloader3_3711c_rt_unified.abs
+#	cp -f ${ROOT_PRJ}/$(DEF_DB) ${ROOT_PRJ}/factory_data_sabbat.bin
+	
+	cd ${ROOT_PRJ}; \
+	  ../../../../${TOOLS}/${merge_tool} ${BSP}
+endef
+
+
+define dual_generate_7z
+generate_7z:
+ifdef _CAS9_CA_ENABLE_
+	$(call generate_7z-cas9_ca_enable)
+else
+ifdef _C1800A_CA_ENABLE_
+	$(call generate_7z-c1800a_ca_enable)
+else
+ifdef _BC_CA_ENABLE_
+ifdef _SMI_ENABLE_
+	$(call generate_7z-smi_enable)
+else
+	$(call generate_7z-bc_ca_enable)
+endif
+else
+ifdef _GEN_CA_ENABLE_
+ifdef _SMI_ENABLE_
+	$(call generate_7z-smi_enable)
+else
+	$(call generate_7z-gen_ca_enable)
+endif
+else
+	$(call generate_7z-normal)
+endif		# endif _GEN_CA_ENABLE_
+endif		# endif _BC_CA_ENABLE_
+endif       # endif _C1800A_CA_ENABLE_
+endif		# endif _CAS9_CA_ENABLE_
+endef
+
+
+LFLAG_AUI = 
+NAND_LIB =
+
+ifdef _AUI_
+
+ifdef _AUI_TEST_
+ifdef _BUILD_OTA_E_
+LFLAG_AUI+= -L$(DDK_DIR) -laui_test -laui
+else
+LFLAG_AUI+= -L$(DDK_DIR) -laui_test -laui
+endif
+endif
+ifdef _AUI_NESTOR_
+ifdef _TEST_OLD_CI_
+LFLAG_AUI+= -L$(DDK_DIR) -lnestor -laui
+else
+LFLAG_AUI+= -L$(DDK_DIR) --start-group -laui_nestor -laliciframework -laliciprofile -lalicitrace --end-group -laui
+endif
+endif
+
+ifdef _BC_CA_ENABLE_
+LFLAG_AUI+= -lbc
+endif
+
+endif
+
+ifdef _NAND_ENABLE_
+NAND_LIB = -lnand
+endif
+
+define dual_link
+link:
+		${LD} ${LDFLAGS} ${NEED} ${PLUGIN_MAIN} -o ${OUT}.out -Map ${OUT}.map \
+	  -T lscript.ld ${LIB} $(LIB_HDMI) $(IRD_LOADER_SPI) $(IRD_LOADER_BL) $(IRD_LOADER_APP) $(IRD_VD) $(LFLAG_AUI) $(NAND_LIB) -lstb ${USB_ETHERNET_LIB} ${USB_WIFI_LIB} $(USB_WIFI_7601_LIB) $(USB_WIFI_8188_LIB) \
+	   --start-group ${SAT2IP_LIB}  $(HTTPSERVER_LIB) $(OPENSSL_LIB) $(WIFISTORAGE_LIB) --end-group \
+	   --start-group ${ALL_LIBS} ${EXTRA_LIBS} \
+	   $(MHEG5_V2_LIB) \
+	   -lstb $(LFLAG_AUI) --end-group \
+	   -lstb -l7zip -lm ${LIBSTDCPP} -lgcc -lc ${LIBE}
+	${OBJCOPY} -O binary ${OUT}.out ${OUT}.abs
+ifdef _DD_SUPPORT
+	echo "out main_link_merge"
+	rm -f ${PLUG_M_OUT_SH};
+	cp ${ROOT_PRJ}/${PLUG_M_OUT_SH} ${LIB_DIR};
+ifdef _DD_DDPLUS_SIGNATURE
+	@echo "========test DD SIGN========"
+	cp -f ${PLUGIN_PATH}/${PLUGIN_DEC} ${SIGNATURE_DIR}
+	cd ${SIGNATURE_DIR};\
+	./plugin_sign.sh './ALiCrypto' ${PLUGIN_DEC} 'test_pair.key' 'id.bin';\
+	cp -f ${PLUGIN_DEC} ${PLUGIN_PATH}/${PLUGIN_DEC}
+endif	
+	cp ${PLUGIN_PATH}/${PLUGIN_DEC} ${LIB_DIR}/plugin_dec.abs;
+	./${PLUG_M_OUT_SH} ${OUT};
+	rm plugin_dec.abs
+endif
+endef
+
+define single_compress_7z
+compress_7z :
+	${OBJCOPY} -R .flash -O binary ${OUT}.out ${OUT}; \
+	${OBJCOPY} -j .flash -O binary ${OUT}.out flash.sec; \
+	rm -f ${OUT}.7z; \
+#add for fast boot up
+ifdef _BUILD_OTA_E_
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+else
+ifdef _COMPRESS_LZO
+	../prj/${TOOLS}/lzox99 ${OUT} ${OUT}.7z
+else
+	../prj/${TOOLS}/lzma e ${OUT} ${OUT}.7z -lc0 -lp2
+endif
+endif
+endef
+
+define single_generate_7z
+generate_7z :
+	rm -f app_${OUT}.bin
+	cp -f ${OUT}.7z ${ROOT_PRJ}/app.bin
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin
+
+	cp -f ${ROOT_PRJ}/${BOOTLOADER_MA_RT} ${ROOT_PRJ}/bloader3_3711c_rt_unified.abs
+	cp -f ${ROOT_PRJ}/$(DEF_DB) ${ROOT_PRJ}/factory_data_sabbat.bin
+	cd ${ROOT_PRJ}; \
+	  ../../../../${TOOLS}/${merge_tool} ${BSP}
+endef
+
+define single_link
+link :
+	${LD} ${LDFLAGS} ${NEED} $(shell ls $(PLUGINEXT_DIR)/*.o ) $(shell ls $(PLUGINDDK_DIR)/*.o ) -o ${OUT}.out -Map ${OUT}.map \
+	  -T lscript.ld ${LIB} $(LIB_HDMI)  -lstb ${USB_WIFI_LIB} $(USB_3G_LIB) ${NET_LINK} \
+	   ${ALL_LIBS} \
+	   $(MHEG5_V2_LIB) \
+	   -lstb -l7zip -lm ${LIBSTDCPP} -lgcc -lc ${LIBE}
+	${OBJCOPY} -O binary ${OUT}.out ${OUT}.abs
+endef
+
+define common_compress_7z
+ifdef DUAL_ENABLE
+$(call dual_compress_7z)
+else
+$(call single_compress_7z)
+endif
+endef
+
+define common_generate_7z
+ifdef DUAL_ENABLE
+$(call dual_generate_7z)
+else
+$(call single_generate_7z)
+endif
+endef
+
+define common_link
+ifdef DUAL_ENABLE
+$(call dual_link)
+else
+$(call single_link)
+endif
+endef
+
+$(eval $(call common_compress_7z))
+$(eval $(call common_generate_7z))
+$(eval $(call common_link))
+
+link_ota :
+
+ifdef _BUILD_USB_LOADER_RET2GAC
+	${LD} ${LDFLAGS} ${NEED} $(shell ls $(PLUGINEXT_DIR)/*_ntfs.o ) -o ${OUT}.out -Map ${OUT}.map \
+	  -T lscript.ld ${LIB} $(LIB_HDMI) $(LFLAG_AUI) -lstb \
+	   ${DDKLIB}.a ${PVR_PLUS}.a ${SMOD_LIB} ${CA_LIB} ${BURN_OTP}.a \
+	   -lstb -l7zip -lm -lgcc -lc ${LIBE}\
+	   --start-group ${EXTRA_LIBS} -lstb --end-group
+	${OBJCOPY} -O binary ${OUT}.out ${OUT}.abs
+	cp ${OUT}.abs sw_init.abs
+	cp ${OUT}.abs ${ROOT_PRJ}/sw_init.abs	
+	mkdir -p ${ROOT_PRJ}/mpclient/M3716L
+	cp ${ROOT_PRJ}/sw_init.abs ${ROOT_PRJ}/mpclient/M3716L
+else # not _BUILD_USB_LOADER_RET2GAC
+ifdef _BUILD_USB_LOADER_
+	${LD} ${LDFLAGS} ${NEED} $(shell ls $(PLUGINEXT_DIR)/*_ntfs.o ) -o ${OUT}.out -Map ${OUT}.map \
+	  -T lscript.ld ${LIB} $(LIB_HDMI) $(LFLAG_AUI) -lstb \
+	   ${DDKLIB}.a ${PVR_PLUS}.a ${SMOD_LIB} ${CA_LIB} \
+	   -lstb -l7zip -lm -lgcc -lc ${LIBE}\
+	   --start-group ${EXTRA_LIBS} -lstb --end-group
+	${OBJCOPY} -O binary ${OUT}.out ${OUT}.abs
+  ifdef _BUILD_UPG_LOADER_
+	  cp ${OUT}.abs upg_app.bin
+  endif
+else # not _BUILD_USB_LOADER_
+	${LD} ${LDFLAGS} ${NEED} -o ${OUT}.out -Map ${OUT}.map \
+	  -T lscript.ld ${LIB} $(LIB_HDMI) $(LFLAG_AUI) $(IRD_LOADER_SPI) $(IRD_LOADER_BL) -lstb \
+	  --start-group ${DDKLIB}.a ${SMOD_LIB} ${CA_LIB} $(LFLAG_AUI) -lstb  --end-group \
+	  -l7zip -lm -lgcc -lc ${LIBE}  ${EXTRA_LIBS}
+	${OBJCOPY} -O binary ${OUT}.out ${OUT}.abs
+	cp ${OUT}.abs ${OUC_LOADER}
+#	cp -f ${OUT}.out $(RUN_DIR)/
+#	${OBJDUMP} -D ${OUT}.out > ${OUT}.dis
+endif		# endif _BUILD_USB_LOADER_
+endif   # endif _BUILD_USB_LOADER_RET2GAC
+
+
+see_link :
+	${LD} ${LDFLAGS} ${PLUGIN_OBJ} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${SEE_LSCR} ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB}.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+	${OBJCOPY} -O binary ${SEE_OUT}.out ${SEE_OUT}.abs
+
+ifdef _M3515_SECURE_BOOT_ENABLE_
+	cp -f ${SEE_OUT}.abs ${ROOT_PRJ}/${CA_AP_DIR};
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${BOOTCFG35} boot.cfg;
+#ifdef _LINUX_COMPILER_ENVIRONMENT_
+#	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+#	dos2unix *.sh;\
+#	./see_sig_linux_3711c.sh ${SEE_OUT} ${SIGPARA2};
+#else
+#	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+#	dos2unix *.sh;\
+#	./see_sig_3711c.sh ${SEE_OUT} ${SIGPARA2};
+#endif
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/s3711c_sabat.ini ./
+#	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${SEE_OUT}.sig ./
+	unix2dos s3711c_sabat.ini
+endif
+
+see_link_ota :
+
+ifdef _BUILD_USB_LOADER_RET2GAC
+	${LD} ${LDFLAGS} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${SEE_LSCR} ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB}.a \
+	    -lm -lgcc -lc ${LIBE}
+	${OBJCOPY} -O binary ${SEE_OUT}.out ${SEE_OUT}.abs
+	
+	cp ${SEE_OUT}.abs upg_app_see.bin	
+	cp ${SEE_OUT}.abs sw_init_see.abs
+	cp ${SEE_OUT}.abs ${ROOT_PRJ}/sw_init_see.abs	
+	
+	cp ${ROOT_PRJ}/sw_init_see.abs ${ROOT_PRJ}/mpclient/M3716L
+else #not _BUILD_USB_LOADER_RET2GAC
+	${LD} ${LDFLAGS} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${SEE_LSCR} ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB}.a \
+	    -lm -lgcc -lc ${LIBE}
+	${OBJCOPY} -O binary ${SEE_OUT}.out ${SEE_OUT}.abs
+endif	
+
+ifdef _M3515_SECURE_BOOT_ENABLE_
+	cp -f ${SEE_OUT}.abs ${ROOT_PRJ}/${CA_AP_DIR};
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${BOOTCFG35} boot.cfg;
+#ifdef _LINUX_COMPILER_ENVIRONMENT_
+#	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+#	dos2unix *.sh;\
+#	./see_sig_linux_3711c.sh ${SEE_OUT} ${SIGPARA2};
+#else
+#	cd ${ROOT_PRJ}/${CA_AP_DIR}; \
+#	dos2unix *.sh;\
+#	./see_sig_3711c.sh ${SEE_OUT} ${SIGPARA2};
+#endif
+	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/s3711c_sabat.ini ./
+#	cp -f ${ROOT_PRJ}/${CA_AP_DIR}/${SEE_OUT}.sig ./
+	unix2dos s3711c_sabat.ini
+endif
+
+cleanld :
+	rm -f ${OUT}.out ${OUT}.map ${OUT}.dis ${OUT}.abs libstb.a \
+	  ${OUT} flash.sec ${OUT}.gz ${OUT}.7z app_${OUT}.bin
+
+label :
+	${MAKE} -f ${MAKEFILE_CMD} label
+
+label_core :
+	${MAKE} -f ${MAKEFILE_CMD} label_core
+
+label_sec :
+	${MAKE} -f ${MAKEFILE_CMD} label_sec
+
+ddk:
+	${MAKE} -f ${MAKEFILE_CMD} ddk
+
+sdk: sdk_os
+	${MAKE} -f ${MAKEFILE_CMD} sdk
+
+sdk_lib:
+	${MAKE} -f ${MAKEFILE_CMD} sdk
+
+sdk_os: plus
+	${MAKE} -f ${MAKEFILE_CMD} sdk_os
+
+ddk_clean :
+	${MAKE} -f ${MAKEFILE_CMD} ddk_clean
+
+sdk_os_clean : plus_clean
+	${MAKE} -f ${MAKEFILE_CMD} sdk_os_clean
+
+sdk_lib_clean :
+	${MAKE} -f ${MAKEFILE_CMD} sdk_lib_clean
+
+sdk_clean : sdk_os_clean
+	${MAKE} -f ${MAKEFILE_CMD} sdk_clean
+
+plus_clean: pplus_clean
+	${MAKE} -f ${MAKEFILE_CMD} plus_clean
+
+plus_lib_clean:
+	${MAKE} -f ${MAKEFILE_CMD} plus_clean
+	
+plus_open:
+	${MAKE} -f ${MAKEFILE_CMD} plus_open
+	${MAKE} -f ${MAKEFILE_CMD} plus_merge
+	
+plus_open_clean:
+	${MAKE} -f ${MAKEFILE_CMD} plus_open_clean
+
+sdk_rel:
+	${MAKE} -f ${MAKEFILE_CMD} sdk_root
+	${MAKE} -f ${MAKEFILE_CMD} sdk_rel_35
+
+plus: pplus
+	${MAKE} -f ${MAKEFILE_CMD} plus
+	${MAKE} -f ${MAKEFILE_CMD} plus_merge
+
+plus_lib:
+	${MAKE} -f ${MAKEFILE_CMD} plus
+
+pplus:
+	${MAKE} -f ${MAKEFILE_CMD} pplus
+
+pplus_clean:
+	${MAKE} -f ${MAKEFILE_CMD} pplus_clean
+
+dis:
+	cd ${ROOT}/obj ;\
+	${OBJDUMP} -D ${OUT}.out > ${OUT}.dis
+
+see_dis:
+	cd ${ROOT}/obj ;\
+	${OBJDUMP} -D ${SEE_OUT}.out > ${SEE_OUT}.dis
+bin:
+	echo Step 0: Check perm ...
+	-chmod -R a+x ../../../../${TOOLS}/*
+	echo Step 1: Compiler application ...
+	echo Step 2: Compress application bin file ...
+	${MAKE} -f ${MAKEFILE_CMD} compress_7z || exit 1
+	echo Step 3: Generate Flash file ...
+	${MAKE} -f ${MAKEFILE_CMD} generate_7z
+	cp -f product_sabbat_*.abs $(ROOT)/obj/
+	echo All finished!
+
+bakcp:
+	${MAKE} -f ${MAKEFILE_CMD} bakcp
+
+see_enc:
+	${MAKE} -f ${MAKEFILE_CMD} see_enc
+
+aui :
+	${MAKE} -f ${MAKEFILE_CMD} aui
+	
+alici :
+	${MAKE} -f ${MAKEFILE_CMD} alici
+
+alici_build_sym:
+		cd ${ROOT}/alici; \
+			${MAKE} tds_build_sym elf_file=$(shell pwd)/${ROOT}/obj/${OUT}.out
+		${MAKE} -f ${MAKEFILE_CMD} all
+		
+sign_see_abs :
+	-chmod -R a+x ../../../../${TOOLS}/*
+  #ifdef _GEN_CA_ENABLE_
+	cp -rf ../../../../${TOOLS}/ALiCrypto* ./${CA_AP_DIR}/generate_boot_total_abs/tool/ 
+  #endif
+	cd ${LIB_DIR}; \
+	${OBJCOPY} -R .flash -O binary ${SEE_OUT}.out ${SEE_OUT};
+	
+	cd ${LIB_DIR}; \
+	mv ${SEE_OUT} ${SEE_OUT}.bak
+ifdef _LINUX_COMPILER_ENVIRONMENT_
+	cd ${LIB_DIR}/../prj/${TOOLS}; \
+	./code_build ../../../obj/${SEE_OUT}.map ../../../obj/${SEE_OUT}.bak ../../../obj/${SEE_OUT}
+else
+	cd ${LIB_DIR}/../prj/${TOOLS}; \
+	./code_build.exe ../../obj/${SEE_OUT}.map ../../obj/${SEE_OUT}.bak ../../obj/${SEE_OUT}
+endif
+	
+	# Sign SEE_SW 
+	cd ${LIB_DIR}; \
+	../prj/${TOOLS}/lzma e ${SEE_OUT} ${SEE_OUT}.7z -lc0 -lp2;\
+	rm -f ${ROOT_PRJ}/app_see.bin;\
+	cp -f ${SEE_OUT}.7z ${ROOT_PRJ}/app_see.bin;\
+	cp -f ${ROOT_PRJ}/app_see.bin ${ROOT_PRJ}/${CA_AP_DIR}/generate_boot_total_abs/common/see_bin.abs
+ifdef _C0700A_VSC_ENABLE_	
+	cd ${CA_AP_DIR}/generate_boot_total_abs && \
+	./generate_see_sig_c3711c_other.sh
+else
+ifdef _C1200A_ENABLE_
+	cd ${CA_AP_DIR}/generate_boot_total_abs && \
+	./generate_see_sig_c3711c_other.sh
+else
+	cd ${CA_AP_DIR}/generate_boot_total_abs && \
+	./generate_see_sig_c3711c.sh
+endif
+endif
+	echo All finished!
+
+	
+SEE_LINK_OTHER =$(PLUGIN_PATH)/lib_con_aac.o $(PLUGIN_PATH)/lib_con_ac3.o $(PLUGIN_PATH)/lib_con_adpcm.o \
+$(PLUGIN_PATH)/lib_con_amr.o $(PLUGIN_PATH)/lib_con_common.o $(PLUGIN_PATH)/lib_con_es.o \
+$(PLUGIN_PATH)/lib_con_flac.o $(PLUGIN_PATH)/lib_con_h264.o \
+$(PLUGIN_PATH)/lib_con_mpeg2.o $(PLUGIN_PATH)/lib_con_mpeg4.o $(PLUGIN_PATH)/lib_con_ogg.o \
+$(PLUGIN_PATH)/lib_con_pcm.o $(PLUGIN_PATH)/lib_con_vc1.o $(PLUGIN_PATH)/lib_con_vorbis.o \
+$(PLUGIN_PATH)/lib_con_vp8.o $(PLUGIN_PATH)/lib_mp4dec.o $(PLUGIN_PATH)/lib_vc1dec.o \
+$(PLUGIN_PATH)/lib_vp8dec.o $(PLUGIN_PATH)/lib_con_dts.o $(PLUGIN_PATH)/lib_con_mp3.o \
+$(PLUGIN_PATH)/plugin_aacv2.o $(PLUGIN_PATH)/plugin_csa3.o 
+SEE_LINK1 =#end
+SEE_LINK2 =$(PLUGIN_PATH)/plugin_eac3_3711C.o 
+SEE_LINK3 =$(PLUGIN_PATH)/plugin_ac32c_3711C.o 
+SEE_LINK_EX = $(shell ls $(PLUGIN_PATH)/lib_con_by*.o )
+SEE_LINK_EX += $(shell ls $(PLUGIN_PATH)/libby*.o )
+SEE_LINK_EX += $(shell ls $(PLUGIN_PATH)/lib_con_mj*.o )
+SEE_LINK_EX += $(shell ls $(PLUGIN_PATH)/lib_mj*.o )
+
+#live play.
+SEE_NEEDED_PLUGIN = $(PLUGIN_PATH)/plugin_mp3.o 
+
+ifdef _C0700A_VSC_ENABLE_
+SEELIB_NORMAL = libsee_m3711c_c0700a_vsc.a
+SEELIB_OTA = libsee_m3711c_ota_c0700a_vsc.a
+LINK_LD_SCRIPT = see_ldscript_m3711c_c0700a_vsc.ld
+else
+SEELIB_NORMAL = libsee_m3711c.a
+SEELIB_OTA = libsee_m3711c_ota.a
+LINK_LD_SCRIPT = see_ldscript_m3711c.ld
+endif
+
+generate_see_abs :
+	mkdir -p ${BASE_DIR}/../see_abs
+	cp -f $(PLUGIN_PATH)/plugin_eac3_3711C.o.bak $(PLUGIN_PATH)/plugin_eac3_3711C.o
+	cp -f $(PLUGIN_PATH)/plugin_ac32c_3711C.o.bak $(PLUGIN_PATH)/plugin_ac32c_3711C.o
+
+	cp -f ${LINK_LD_SCRIPT}  ${LIB_DIR};
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK1} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_128M_zero.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_128M_eac3_only.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} ${SEE_LINK_OTHER} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_128M_full_eac3.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} ${SEE_LINK_OTHER} ${SEE_LINK_EX} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_128M_full_EX_eac3.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK_OTHER} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_128M_full_no_dd.ubo
+	
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK_OTHER} ${SEE_LINK_EX} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_128M_full_EX_no_dd.ubo
+	
+
+#ota see
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_OTA}  \
+	    -lm -lgcc -lc ${LIBE}
+	
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${CA_AP_DIR}/signed_ota_app_see.abs
+	
+###################SCU#################
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK1} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/libsee_m3505_vsc_scu.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_scu_128M_zero.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/libsee_m3505_vsc_scu.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_scu_128M_eac3_only.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} ${SEE_LINK_OTHER} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/libsee_m3505_vsc_scu.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_scu_128M_full_eac3.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} ${SEE_LINK_OTHER} ${SEE_LINK_EX} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/libsee_m3505_vsc_scu.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_scu_128M_full_EX_eac3.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK_OTHER} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/libsee_m3505_vsc_scu.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_scu_128M_full_no_dd.ubo
+	
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK_OTHER} ${SEE_LINK_EX} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/libsee_m3505_vsc_scu.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv see.ubo  ${BASE_DIR}/../see_abs/signed_see_M3711C_cas9_scu_128M_full_EX_no_dd.ubo
+
+#scu ota see
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/libsee_m3505_ota_vsc_scu.a \
+	    -lm -lgcc -lc ${LIBE}
+	
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv see.ubo  ${CA_AP_DIR}/signed_ota_app_see_scu.abs
+	
+	
+generate_see_abs_gen :
+	#copy tools
+ifdef _LINUX_COMPILER_ENVIRONMENT_	
+	cp -rf ${ROOT}/prj/${TOOLS}/ALiCrypto ./${CA_AP_DIR}/generate_boot_total_abs/tool_linux/
+else
+	cp -rf ${ROOT}/prj/${TOOLS}/ALiCrypto.exe ./${CA_AP_DIR}/generate_boot_total_abs/tool/
+endif	
+	#
+	
+	mkdir -p ${BASE_DIR}/../${SEE_ABS}
+	cp -f $(PLUGIN_PATH)/plugin_eac3_3711C.o.bak $(PLUGIN_PATH)/plugin_eac3_3711C.o
+	cp -f $(PLUGIN_PATH)/plugin_ac32c_3711C.o.bak $(PLUGIN_PATH)/plugin_ac32c_3711C.o
+
+	cp -f ${LINK_LD_SCRIPT}  ${LIB_DIR}
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} ${SEE_LINK_OTHER} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv app_see.bin  ${BASE_DIR}/../${SEE_ABS}/signed_see_M3711C_acs_128M_full_eac3.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK2} ${SEE_LINK_OTHER} ${SEE_LINK_EX} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv app_see.bin  ${BASE_DIR}/../${SEE_ABS}/signed_see_M3711C_acs_128M_full_EX_eac3.ubo
+
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK_OTHER} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv app_see.bin  ${BASE_DIR}/../${SEE_ABS}/signed_see_M3711C_acs_128M_full_no_dd.ubo
+	
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK_OTHER} ${SEE_LINK_EX} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_NORMAL}  \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+
+	${MAKE} -f MakefileCommon sign_see_abs
+	mv app_see.bin  ${BASE_DIR}/../${SEE_ABS}/signed_see_M3711C_acs_128M_full_EX_no_dd.ubo	
+	
+
+#ota see
+	cd ${LIB_DIR}; \
+	${LD} ${LDFLAGS} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB_OTA}  \
+	    -lm -lgcc -lc ${LIBE}
+	
+	${MAKE} -f MakefileCommon sign_see_abs	
+	mv app_see.bin  ${CA_AP_DIR}/signed_ota_app_see.ubo
+
+cas9:	
+	${MAKE} -f Makefile3711c.cmd cas9
+	
+	
+see_link_sp:	
+	@if [ -e "$(PLUGIN_PATH)/plugin_eac3_3711C.o.bak" ] ; then \
+		mv -f $(PLUGIN_PATH)/plugin_eac3_3711C.o.bak $(PLUGIN_PATH)/plugin_eac3_3711C.o ; \
+	fi
+
+	${LD} ${LDFLAGS} ${SEE_NEEDED_PLUGIN} ${SEE_LINK3} -o ${SEE_OUT}.out -Map ${SEE_OUT}.map \
+	  -T ${LINK_LD_SCRIPT}  ${LIB} $(LIB_HDMI) $(DDK_DIR)/${SEELIB}.a \
+	    $(DDK_DIR)/${MPG_LIB}.a liblog.a\
+	    -lm -lgcc -lc ${LIBE}
+ota_test:	
+	cd ${CA_AP_DIR} && \
+	../../../../../${TOOLS}/${AS_TOOL} bin_test_gen.cmd;
+	

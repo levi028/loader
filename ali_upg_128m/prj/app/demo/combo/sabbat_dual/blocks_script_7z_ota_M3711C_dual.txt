@@ -1,0 +1,28 @@
+[File]
+id=0x00FF0000
+offset=0x60000
+file=app.bin
+name="otacode"
+ver="M3606 2Tuner"
+time=2010.05.13
+
+[File]
+id=0x07F80000
+offset=0x30000
+file=app_see.bin
+name="seecode"
+ver="M3606 SEE"
+time=2010.05.13
+
+[File]
+id=0x11EE0200
+offset=0x2000
+file=ota_parameter.bin
+;len=0x1ff0
+name="ota_cfg"
+ver="1.0.0"
+time=2010.05.13
+
+[OutFile]
+out=product_sabbat_dual_ota.abs
+

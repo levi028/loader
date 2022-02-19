@@ -1,0 +1,30 @@
+[File]
+id=0x00FF0000
+offset=0x80000
+file=app.bin
+name="o#!"
+NCRC = "NCRC"
+ver="00000001"
+time=2015.09.16
+
+[File]
+id=0x07F80000
+offset=0x40000
+file=app_see.bin
+name="s&$"
+NCRC = "NCRC"
+ver="00000001"
+time=2015.09.16
+
+[File]
+id=0x11EE0200
+offset=0x2000
+file=reserve.bin
+;len=0x1ff0
+name="c%^"
+ver="00000001"
+;time=2015.09.16
+
+[OutFile]
+out=product_sabbat_dual_ota.abs
+

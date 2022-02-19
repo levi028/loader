@@ -1,0 +1,252 @@
+/*****************************************************************************
+ *    Copyrights(C) 2010 ALI Corp. All Rights Reserved.
+ *
+ *    FILE NAME:        ci_legacy_module.c
+ *
+ *    DESCRIPTION:     HD+ Legacy Module
+ *
+ *    HISTORY:
+ *        Date         Author           Version         Notes
+ *        =========    =========      =========        =========
+ *        2010/10/05   Elliott       0.1
+ *
+ *****************************************************************************/
+#include <sys_config.h>
+
+#ifdef HD_PLUS_SUPPORT
+#include <openssl/rsa.h>
+#include <api/libc/string.h>
+#include <basic_types.h>
+#include <api/libsi/si_eit.h>
+#include <api/libtsi/si_descriptor.h>
+//#include <openssl/sk_copyright.h>
+#include "ci_stack.h"
+
+//For debug
+/*
+typedef struct
+{
+    unsigned char Modules[65];
+    unsigned int PublicExponent;
+    unsigned char PrivateExponet[65];
+    unsigned char Prime1[33];
+    unsigned char Prime2[33];
+    unsigned char Exponet1[33];
+    unsigned char Exponet2[33];
+    unsigned char Coefficient[33];
+}PrivateKey;
+RET_CODE sys_get_rsa_key(PrivateKey *rsa_sk);
+
+static UINT32 len_bin_n = 65;
+static UINT32 len_bin_d = 65;
+static UINT32 len_bin_p = 33;
+static UINT32 len_bin_q = 33;
+static unsigned char bin_n[128] __attribute__((  aligned( 16 )))=
+{
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa
+};
+static unsigned char bin_d[128] __attribute__((  aligned( 16 )))=
+{
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa
+};
+static unsigned char bin_p[128] __attribute__((  aligned( 16 )))=
+{
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa
+};
+static unsigned char bin_q[128] __attribute__((  aligned( 16 )))=
+{
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa
+};
+*/
+
+static UINT32 len_coypright = 195;
+static unsigned char copyright[256]={"This is a password and it is proprietary to APS Astra Platform Services GmbH and designated exclusively for use by authorized stb manufacturers. Any use is subject to written authorization by APS"};
+//ali_memset(copyright, 0, 256);
+//ali_strcpy(copyright, "HD+ (eingetragene Marke) zertifiziertes Empfangsgerat");
+
+RET_CODE sys_get_copyright(unsigned char *copyright_stb, UINT32 *len_cr_stb, unsigned char *copyright_cicam, UINT32 *len_cr_cam)
+{
+    APPL_PRINTF("%s: Get stored copyright of STB and CICAM.\n", __FUNCTION__);
+    MEMCPY(copyright_stb, copyright, len_coypright);
+    MEMCPY(copyright_cicam, copyright, len_coypright);
+    *len_cr_stb = len_coypright;
+    *len_cr_cam = len_coypright;
+}
+
+unsigned char der_data[319] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa
+};
+UINT32 der_len = 319;
+
+void rsa_key_bin2bn(BIGNUM *sk_n,BIGNUM *sk_d,BIGNUM *sk_p,BIGNUM *sk_q)
+{
+    APPL_PRINTF("%s: Get SK, and then BigNumber.\n", __FUNCTION__);
+
+//For dubug
+/*
+    PrivateKey rsa_sk;
+    sys_get_RSA_key(&rsa_sk);
+    MEMCPY(bin_n, rsa_sk.Modules, len_bin_n);
+    MEMCPY(bin_d, rsa_sk.PrivateExponet, len_bin_d);
+    MEMCPY(bin_p, rsa_sk.Prime1, len_bin_p);
+    MEMCPY(bin_q, rsa_sk.Prime2, len_bin_q);
+
+    //RSA data style: txt
+    //sk_n = BN_bin2bn(bin_n, len_bin_n, sk_n);
+    //sk_d = BN_bin2bn(bin_d, len_bin_d, sk_d);
+    //sk_p = BN_bin2bn(bin_p, len_bin_p, sk_p);
+    //sk_q = BN_bin2bn(bin_q, len_bin_q, sk_q);
+*/
+
+    //RSA data style: DER
+    sys_get_rsa_key(der_data, &der_len);
+    unsigned char der_tmp[512];
+    unsigned char *p_der_tmp = der_tmp;
+    MEMCPY(p_der_tmp, der_data, der_len);
+    RSA *r;
+    r=RSA_new();
+    asn1_item_d2i((ASN1_VALUE **)(&r), (const unsigned char **)(&p_der_tmp), der_len, ASN1_ITEM_rptr(rsaprivate_key));
+    MEMCPY(sk_n, r->n, sizeof(*(r->n)));
+    MEMCPY(sk_d, r->d, sizeof(*(r->d)));
+    MEMCPY(sk_p, r->p, sizeof(*(r->p)));
+    MEMCPY(sk_q, r->q, sizeof(*(r->q)));
+}
+/*
+//References: AS-5101:4.1.3
+void hdplus_eit_callback(UINT8 *buf, INT32 length, COPYPROT_INFO *cp_info)
+{
+    UINT8 table_id, section_number, desc_tag, desc_len;
+    UINT16 service_id, sec_len, desc_loop_len, event_loop_start=0, desc_loop_start=0;
+    UINT32 event_len;
+    UINT8 *p;
+
+    table_id = buf[0];
+    section_number = buf[6];
+    service_id = (buf[3]<<8) | buf[4];
+    if((table_id == 0x4E)&&(section_number == 0))//&&(service_id == epg_info.service_id))
+    {
+        sec_len = ((buf[1]&0x0F)<<8) | buf[2];
+        p = buf + 14;
+        event_len = sec_len - 15;
+        cp_info->EVENTPROT_count = 0;
+        do
+        {
+            cp_info->EVENTPROT_info[cp_info->EVENTPROT_count].event_id = *p<<8 | *(p+1);
+            p+=10;
+            desc_loop_len = ((*p&0x0f)<<8) | *(p+1);
+            p += 2;
+
+            event_loop_start += 12;
+            if ((UINT32)(event_loop_start+desc_loop_len) > event_len)
+            {
+                soc_printf("desc loop buffer overflow!\n");
+            }
+
+            //process event's desc loop
+            desc_loop_start = 0;
+            while (desc_loop_start < desc_loop_len)
+            {
+                desc_tag = *p;
+                desc_len = *(p+1);
+                soc_printf("descriptor tag: 0x%X\n",desc_tag);
+                soc_printf("descriptor length: %d\n",desc_len);
+
+                if (desc_loop_start+desc_len+2 <= desc_loop_len)
+                {
+                    switch (desc_tag)
+                    {
+                        case 0xDE:
+                            cp_info->EVENTPROT_info[cp_info->EVENTPROT_count].digital_copy_protection = (*(p+3)&0x02)>>1;
+                            cp_info->EVENTPROT_info[cp_info->EVENTPROT_count].analog_copy_protection = *(p+3)&0x01;
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+
+                p += (desc_len+2);
+                desc_loop_start += (desc_len+2);
+            }
+
+            cp_info->EVENTPROT_count++;
+            event_loop_start += desc_loop_len;
+
+        } while(event_loop_start < event_len);
+    }
+}
+
+//references: AS-3001:3.3.3
+void hdplus_pmt_callback(UINT8 *buf, INT32 length, NASPCA_INFO *naspca_info)
+{
+    UINT8 *p, *priv;
+    INT32 loop_len, i, desc_len;
+    struct descriptor *desc;
+
+    p = buf + 12;
+    loop_len = ((buf[10]<<8)|buf[11])&0xFFF;
+
+    for(i=0; i<loop_len; i+=sizeof(struct descriptor)+desc_len)
+    {
+        desc = (struct descriptor *)(p+i);
+        desc_len = desc->len;
+        if(desc->tag == CA_DESCRIPTOR)
+        {
+            priv=desc->data;
+            if(priv[4]==0x86)
+            {
+                naspca_info->NASP_count=priv[5]/7;
+                if(naspca_info->NASP_count<P_MAX_NASP_NUM)
+                {
+                    for(i=0; i<naspca_info->NASP_count;i++)
+                    {
+                        naspca_info->NASP_info[i].right_type=priv[4+7*i+2];
+                        naspca_info->NASP_info[i].PPID=(priv[4+7*i+3]<<8)|(priv[4+7*i+4]);
+                        naspca_info->NASP_info[i].NASP_SID=(priv[4+7*i+5]<<8)|(priv[4+7*i+6]);
+                        naspca_info->NASP_info[i].level=(priv[4+7*i+7]&0xf0)>>4;
+                        naspca_info->NASP_info[i].unscrambled=(priv[4+7*i+8]&0x02)>>1;
+                        naspca_info->NASP_info[i].free_access=priv[4+7*i+8]&0x01;
+                    }
+                }
+                else
+                {
+                    soc_printf("%s: nasp count %d full!\n",__FUNCTION__,naspca_info->NASP_count);
+                }
+            }
+        }
+    }
+}
+*/
+#endif
+

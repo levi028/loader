@@ -1,0 +1,10 @@
+LOCAL_BASE = /cygdrive/d/svn/3711C_NBC_PA_HIGH/GA15_NBC1.01.61_Dominican_COMCAST/ALi_UPG_128M_export
+ 
+BASE_DIR = ${LOCAL_BASE}
+DDK = ddkt2
+INC_DIR = ${BASE_DIR}/inc
+LIB_DIR = ${BASE_DIR}/obj
+REL_DIR = ${BASE_DIR}/rel
+DDK_DIR = ${BASE_DIR}/${DDK}
+PLUGINDDK_DIR = ${BASE_DIR}/${DDK}/plugin
+PLUGINEXT_DIR = ${BASE_DIR}/${DDK}/plugin_ext

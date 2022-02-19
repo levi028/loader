@@ -1,0 +1,6282 @@
+#
+# -= Makefile for project compile =-
+#
+# Usage:
+# . Name this file as "Makefile";
+#   Put it in the root of "src" directory.
+# . Add a new module name in SMOD;
+#   Write the linkage information at the end of file.
+#
+
+# List of sub-modules
+# Note: Can NOT be the same name as sub-directories.
+SMOD = OSAL_NOS OS_TDS2 OS_TDS3 ARCH_M63 PDD_M33 PDD_M38 HLD_BASE \
+       LIB_JPEGDEC LIB_JPEG_M36 LIB_PE_IMAGE_ENGINE_PLUGINS_JPEG LIB_MPEGDEC \
+       LIB_PUB_ALL LIB_PUB_AS_ENGINE LIB_PUB_AS_S LIB_PUB_AS_C LIB_PUB_AS_T\
+       LIB_PIP LIB_UTILS FS_MAIN LIB_PE_EMBEDED_SUBTITLE LIB_PE_EXTERNAL_SUBTITLE\
+       BUS_PCI BUS_PCI_M63 \
+       BUS_UP BUS_UP_M33 \
+       BUS_SD_M33 \
+       BUS_USB_LINUX \
+       USB_3G_MDM \
+       BUS_USB_HC_M36 BUS_USB_USBD_M36 BUS_USB_DEV_STOR_M36\
+       BUS_USB_HC_M36_EX BUS_USB_USBD_M36_EX BUS_USB_DEV_STOR_M36_EX BUS_USB_HUB_M36_EX\
+       BUS_USB_HC_M36F BUS_USB_USBD_M36F BUS_USB_DEV_STOR_M36F BUS_USB_DEV_NET_RT5370_M36F BUS_USB_HUB_M36F \
+       BUS_USB_HC_M36_S2 BUS_USB_USBD_M36_S2 BUS_USB_DEV_STOR_M36_S2\
+       BUS_I2C BUS_M36_I2C_SLAVE BUS_I2C_GPIO BUS_I2C_SCB BUS_I2C_SCB_REMOTE \
+       BUS_SCI BUS_SCI_UART BUS_SPE_M33 \
+       BUS_IDE BUS_IDE_M36 \
+       BUS_SATA BUS_SATA_M36F \
+       BUS_TSI BUS_TSI_M33 BUS_TSI_M36 BUS_TSG_M36 BUS_DMA_M36 BUS_DMA_M36F BUS_DPLL BUS_CT1642\
+       BUS_DOG BUS_DOG_M33 BUS_RTC_M36 \
+       BUS_OTP BUS_OTP_M33 \
+       BUS_EROM BUS_EROM_M36\
+       BUS_SHARE_PFLASH BUS_SHARE_SFLASH \
+       HLD_STO LLD_STO LLD_STO_RAM LLD_STO_FLASH LLD_STO_AT24C04 LLD_STO_FLASH_SQI LLD_STO_FLASH_SQI_S LLD_STO_NAND LLD_STO_NAND_S\
+       HLD_NIM LLD_NIM LLD_NIM_S LLD_NIM_S2 LLD_NIM_S2_3501 LLD_NIM_S2_C3505 LLD_NIM_S2_3501_S LLD_NIM_S2_A LLD_NIM_DVBT2 LLD_NIM_DVBT LLD_NIM_M3101 LLD_NIM_C LLD_NIM_S2_TUNER LLD_NIM_TUN_TDA18250 LLD_NIM_LNB LLD_NIM_CX24116 LLD_NIM_AUTOSCAN \
+       HLD_CIC LLD_CIC LLD_CIC_M36\
+       HLD_DMX LLD_DMX LLD_DMX_M36_ATSC LLD_DMX_M33 LLD_DMX_M36 LLD_DMX_M36F LLD_DMX_M36_S LLD_DMX_M36_T LLD_DMX_M36F_S LLD_DMX_M36F_T LLD_DMX_M36F_M3701E LLD_DMX_M36F_M3701E_S LLD_DMX_M36F_M3701E_S2\
+       HLD_DECV LLD_DECV LLD_DECV_M36 LLD_DECV_M36_3383 LLD_DECV_M36_ATSC LLD_DECV_M33 LLD_DECV_M36_M3701E LLD_DECV_AVC LLD_DECV_AVS LLD_DECV_AVC_T LLD_DECV_AVC_S LLD_DECV_AVC_M3701E LLD_DCEV_CFG LLD_DCEV_CFG_C\
+       HLD_VENC LLD_VENC LLD_VENC_M33 LLD_VENC_IMG \
+       HLD_GE  LLD_GE LLD_GE_M36 LLD_GE_M33F LLD_GE_M36_ATSC HLD_GE_DDK  LLD_GE_M36F\
+       HLD_VP  LLD_DIS LLD_VP_M36 LLD_VP_M36_ATSC LLD_VP_M33 LLD_VP_M36F LLD_VP_M36F_S LLD_VP_M36F_T LLD_VP_M36F_3383 LLD_VP_M36F_M3701E LLD_VP_M36G LLD_VP_M3921 LLD_TVE_M3921 \
+       HLD_VBI LLD_VBI LLD_VBI_M33 LLD_VBI_ATSC_CC\
+       HLD_DECA LLD_DECA LLD_DECA_M36 LLD_DECA_M36F LLD_DECA_M36F_T LLD_DECA_M36_S LLD_DECA_M36_T LLD_DECA_M33 LLD_DECA_M33_S1 LLD_DECA_M36_ATSC LLD_DECA_M36_HD_STREAM_DECODER LLD_DECA_M36F_HD_STREAM_DECODER LLD_DECA_M36F_M3701E_HD_STREAM_DECODER LLD_DECA_M36F_HD_STREAM_DECODER_T LLD_DECA_M36_HD_STREAM_DECODER_S LLD_DECA_M36F_M3701E LLD_DECA_M36F_M3701E_S\
+       HLD_SND LLD_SND LLD_SND_M36 LLD_SND_M33 LLD_SND_M36_S LLD_SND_M36_T LLD_SND_M36_ATSC LLD_SND_M36F LLD_SND_M36G LLD_SND_M36F_T LLD_SND_M36F_3383 LLD_SND_M36F_M3701E LLD_SND_M36F_M3701E_S \
+       HLD_OSD LLD_OSD LLD_OSD_M36 LLD_OSD_M33F LLD_OSD_M36_ATSC LLD_OSD_M36_HD LLD_OSD_M36_HD_S2 LLD_OSD_M3C LLD_OSD_M36F \
+       HLD_SDEC LLD_SDEC LLD_SDEC_SW \
+       LLD_ISDBTCC\
+       HLD_RFM LLD_RFM LLD_RFM_TA1243 LLD_RFM_MCBS373 LLD_RFM_V8060 LLD_RFM_SHARP5056 LLD_RFM_RMUP74055 LLD_RFM_SM0268 LLD_RFM_MC44BS374T1\
+       HLD_PAN LLD_PAN LLD_IRC LLD_IRC_M63 LLD_IRX_M36 \
+       LLD_PAN_COMMON LLD_PAN_HWSCAN LLD_PAN_NEC_16312 LLD_PAN_CT1642 LLD_PAN_CT1642_GY LLD_PAN_DIRECT_GPIO LLD_PAN_SMT_M51 LLD_PAN_PT6958 LLD_PAN_PT6958_27E4 LLD_PAN_PT6964 \
+       LLD_PAN_PT6964_SKY LLD_PAN_DUAL_SHIFT LLD_PAN_CH455 LLD_PAN_AT89 LLD_PAN_FD650 \
+       HLD_SMC LLD_SMC LLD_SMC_UART LLD_SMARTCARD\
+       HLD_SCART LLD_SCART_AK4707 LLD_SCART_MX9671 LLD_SCART_ST6418 LLD_SCART_ST6419\
+       LIB_PUB LIB_PUB29 LIB_PUB29_T LIB_PUB29_ISDBT LIB_PUB29_ATSC LIB_PUB29_AS LIB_PUB29_S\
+       LIB_BOOTUPG LIB_BOOTUPG3 LIB_UPG LIB_UPG_E LIB_USBUPG LIB_UPG3 \
+       LIB_C LIB_GNUZIP LIB_LIB7ZIP LIB_LZMA LIB_UN7ZIP LIB_UNLZO LIB_CHAR \
+       LIB_NIM LIB_DISEQC LIB_DISEQC_EXT \
+       LIB_CIPLUS LIB_DBC LIB_OTA LIB_OTA_C LIB_TTX LIB_TTX_T LIB_SUBT \
+       LIB_ISDBTCC LIB_FDT\
+       LIB_XML2 LIB_XML LIB_XML_BROWSER LIB_XML_BUFFER LIB_XML_CHAR LIB_XML_FDT LIB_XML_PARSE LIB_XML_TOKEN LIB_XML_TREE \
+       LIB_SEC2 LIB_PSI2 LIB_PSEARCH \
+       LIB_TSI3_CON_PSI LIB_TSI3_DESCRIPTOR LIB_TSI3_ENGINE LIB_TSI3_PARSER LIB_TSI3_PLUGIN_EIT LIB_TSI3_PLUGIN_MONITOR LIB_TSI3_PLUGIN_MONITOR_T\
+	   LIB_TSI3_PLUGIN_SEARCH LIB_TSI3_PLUGIN_TDT LIB_TSI3_UTILITY \
+	   LIB_EPG \
+       LIB_CHUNK LIB_DB4 LIB_DB4_C LIB_DB4_T LIB_DB4_ISDBT LIB_DB4_ATSC LIB_DB3 LIB_DBEX \
+       LIB_LANG LIB_GUI LIB_OSDO LIB_LOADER LIB_STBINFO \
+       UDI_IPANEL UDI_MHEG LIB_TFCA LIB_JWTCA LIB_CDCA LIB_ABVCA \
+       IRCA_VD \
+       LIB_IMAGEDEC LIB_PNGDEC\
+       BUS_HDMI_M36 BUS_HDMI_SEE BUS_HDMI_M36_S2 BUS_HDMI_CAT6611 BUS_HDMI_CAT6613 BUS_PINMUX_M36 \
+       VERSION_INFO VERSION_INFO_BL VERSION_INFO_PLUS VERSION_INFO_APP DUAL_MODULES\
+       LLD_SDEC_HW_M33 \
+       LIB_PUB27_ATSC LIB_PUB27_T LIB_PSI2 LLD_NIM_ATSC LLD_NIM_ATSC_SDK LLD_NIM_ISDBT_SDK BUS_ACI BUS_ACI_SCB BUS_ACI_GPIO LIB_PSIP LIB_OTA_ATSC LIB_CLOSE_CAPTION LIB_CLOSE_CAPTION_A\
+       LIB_MCAS LIB_PUB_AS_ENGINE\
+       LIB_VFS2 LIB_VFS2_S LIB_VFS LIB_VFS_S LIB_DOSFS LIB_NTFS LIB_JFFS2 LIB_STDIO \
+       LIB_MP LIB_MP_S LIB_MP_M33 LIB_LISTS LIB_PE LIB_PE_ADV_VIDEO_ENGINE LIB_PE_MUSIC_ENGINE LIB_PE_IMAGE_ENGINE LIB_PE_S2 LIB_PLAYLIST LIB_PVR  LIB_MP_HD LIB_PE_HD LIB_PE_MUSIC_ENGINE_INPUT_MP3 LIB_PE_MUSIC_ENGINE_INPUT_AAC LIB_PE_MUSIC_ENGINE_INPUT_AC3 LIB_PE_MUSIC_ENGINE_INPUT_BYE1 LIB_PE_MUSIC_ENGINE_INPUT_WAV\
+       LIB_PVR_HD LIB_PVR3_ENG LIB_PVR3_MGR LIB_TSG LIB_PVR3_API36 LIB_PVR3_API33 LIB_PLAYLIST_HD \
+       HLD_NET LLD_NET LLD_NET_RTL8139 LLD_NET_DM9KA LLD_NET_ENC28J60 LLD_NET_SMSC9220 LLD_NET_W5300 LIB_LWIP LIB_LWIP140 LIB_NIC\
+       HLD_WIFI UDI_PTHREAD LIB_UPNP LIB_HTTP_MG_SERVER LIB_HTTP_SERVER LIB_SATIP_SERVER LIB_MEDIA_PROVIDER LIB_DLNAPEER LIB_DLNAPROGRESS\
+       LIB_GE \
+       LIB_PE_AV_PLAYER_ENGINE \
+       LIB_PE_ADV_VIDEO_ENGINE_MKV LIB_PE_ADV_VIDEO_ENGINE_ALIP\
+       LIB_MP_HD_MP1 LIB_PE_HD_MP1 LIB_PE_MUSIC_ENGINE_INPUT_MP3_MP1 LIB_PLAYLIST_MP1 \
+       LIB_EPG_ATSC LIB_GA \
+       BUS_IDE_M36_HD LIB_NET LIB_CURL LIB_CURL_S LIB_LIVE555 LIB_NETUPG LIB_NETCTL LLD_DMX_M33_S2 \
+	   LIB_BT LIB_PICASA\
+	   LIB_PE_AV_PLAYER_CODEC_AAC LIB_PE_AV_PLAYER_CODEC_AVC LIB_PE_AV_PLAYER_CONTAINER_MP4  LLD_VP_M36_T LLD_DECV_M36_S LIB_PUB_ALL_T LIB_PUB_AS_ENGINE_T \
+	   LIB_PUB_ALL_T2 LIB_PUB_AS_ENGINE_T2 LIB_PUB_ALL_ISDBT LIB_PUB_AS_ENGINE_ISDBT \
+       LLD_DECV_M36_C LLD_OSD_M31 \
+       LLD_DSC LLD_DSC_M36F \
+       LLD_CRYPTO LLD_CRYPTO_M36F LLD_TRNG_M36F\
+       HLD_GMA LLD_GMA_M36F LLD_GMA_M3921\
+       HLD_DSC HLD_CRYPTO LLD_DECA_M31 LLD_DECA_M31_HD_STREAM_DECODER LLD_SND_M31 LIB_CIPLUS_S LIB_OSD_3D \
+       PLUGIN_ALL LIB_CIPLUS_CC_S LIB_CRYPTO LIB_CIPLUS_S2 LIB_RSA LIB_GE_OSD LIB_CIPLUS_CC \
+       LLD_NIM_S3811 LLD_PMU_M36 BOOT_SLOTIR	LLD_NIM_MXL241 LLD_SBM LIB_ALI_HLS LLD_NIM_MXL603 LLD_NIM_C_ATMB2040 LLD_NIM_C_ATMB253 LLD_NIM_COMBO LLD_NIM_MXL_214C\
+       HLD_SEC_BOOT LIB_RSA_SEE LLD_VSC LLD_ICAS LLD_C0700A_VSC \
+       UDI_ENRICH UDI_ENRICH_FAKE UDI_ENRICH_CODETEST \
+       UDI_MPHDI UDI_MPHDI_FAKE UDI_MPHDI_CODETEST \
+       UDI_ROCME UDI_ROCME_FAKE UDI_ROCME_CODETEST \
+       UDI_NV UDI_NV_TEST \
+       HLD_CSD HLD_CTD LIB_DSC_LLD_PLUGIN_CSA3 LLD_CRYPTO_GLUE HLD_PVR LLD_HHE \
+       HLD_AVSYNC LLD_AVSYNC \
+       HLD_CA_CERT HLD_NOCS3_BSD NOCS3_BSD_CRYPTO HLD_CERT NOCS3_CSD NOCS3_CERT NOCS3_SEC \
+       LIB_SMK HLD_CF LLD_CF LLD_TRIM LLD_THERMAL HLD_CASI
+
+# Following lines are the common description for all projects.
+# Do NOT modify anything, unless you know what you are doing.
+
+# Note: Assume this file is executed under 'src' directory.
+include compiler.def
+include path.def
+
+SMOD_ = ${SMOD:=_}
+SMOD__ = ${SMOD:=__}
+
+do_nothing :
+
+all : ${SMOD}
+
+clean : ${SMOD_}
+	cd ${LIB_DIR}; \
+	  rm -f list.mod
+	  
+ddk_rel : ${SMOD__}
+	cd ${LIB_DIR}; \
+
+rebuild: clean all
+
+
+telelogic: telelogic.mk
+	echo generate $< done
+
+telelogic.mk: makefile
+	@gawk  -v src_root_path="${BASE_DIR}" -f ../prj/tools/telelogic.awk $<  >$@
+
+telelogic_all: telelogic.mk 
+	make -f telelogic.mk ${SMOD}
+
+# End of common description.
+
+# Construct and deconstruct of sub-modules
+
+LIB_JPEGDEC :
+	cd lib/libapplet/libmp/libimagedec/jpeg/m33; \
+	  ${MAKE}
+	  
+LIB_JPEGDEC_ :	
+	cd lib/libapplet/libmp/libimagedec/jpeg/m33; \
+	  ${MAKE} clean
+	  
+LIB_PE_IMAGE_ENGINE_PLUGINS_JPEG :
+	cd lib/libapplet/libmp/pe/image/plugins/jpeg; \
+	  ${MAKE}
+	  
+LIB_PE_IMAGE_ENGINE_PLUGINS_JPEG_ :
+	cd lib/libapplet/libmp/pe/image/plugins/jpeg; \
+	  ${MAKE} clean
+	  
+LIB_JPEG_M36 :
+	cd lib/libapplet/libmp/libimagedec/jpeg/m36; \
+	  ${MAKE}
+	  
+LIB_JPEG_M36_ :	
+	cd lib/libapplet/libmp/libimagedec/jpeg/m36; \
+	  ${MAKE} clean
+	  
+LIB_MPEGDEC :
+	cd lib/libapplet/libmp/libmpegdec; \
+	${MAKE} 
+	
+LIB_MPEGDEC_ :
+	cd lib/libapplet/libmp/libmpegdec; \
+	${MAKE} clean
+
+LIB_MJPGDEC :
+	cd lib/libapplet/libmp/libmjpgdec; \
+	${MAKE} 
+	
+LIB_MJPGDEC_ :
+	cd lib/libapplet/libmp/libmjpgdec; \
+	${MAKE} clean
+	
+LIB_PUB_ALL :
+	cd lib/libapplet/libpub/pub; \
+	${MAKE} 
+	
+LIB_PUB_ALL_ :
+	cd lib/libapplet/libpub/pub; \
+	${MAKE} clean
+
+LIB_PUB_ALL__ :
+	cd lib/libapplet/libpub/pub; \
+	${MAKE} ddk_rel
+
+LIB_PUB_ALL_T :
+	cd lib/libapplet/libpub/pub/pub_t; \
+	${MAKE} 
+	
+LIB_PUB_ALL_T_ :
+	cd lib/libapplet/libpub/pub/pub_t; \
+	${MAKE} clean
+
+LIB_PUB_ALL_T__ :
+	cd lib/libapplet/libpub/pub/pub_t; \
+	${MAKE} ddk_rel
+
+LIB_PUB_ALL_T2 :
+	cd lib/libapplet/libpub/pub/pub_t2; \
+	${MAKE} 
+	
+LIB_PUB_ALL_T2_ :
+	cd lib/libapplet/libpub/pub/pub_t2; \
+	${MAKE} clean
+
+LIB_PUB_ALL_T2__ :
+	cd lib/libapplet/libpub/pub/pub_t2; \
+	${MAKE} ddk_rel
+
+LIB_PUB_ALL_ISDBT :
+	cd lib/libapplet/libpub/pub/pub_isdbt; \
+	${MAKE} 
+	
+LIB_PUB_ALL_ISDBT_ :
+	cd lib/libapplet/libpub/pub/pub_isdbt; \
+	${MAKE} clean
+
+LIB_PUB_ALL_ISDBT__ :
+	cd lib/libapplet/libpub/pub/pub_isdbt; \
+	${MAKE} ddk_rel
+
+LIB_PUB_AS_ENGINE:
+	cd lib/libapplet/libpub/as_engine; \
+	${MAKE} 
+	
+LIB_PUB_AS_ENGINE_ :
+	cd lib/libapplet/libpub/as_engine; \
+	${MAKE} clean
+
+LIB_PUB_AS_ENGINE__ :
+	cd lib/libapplet/libpub/as_engine; \
+	${MAKE} ddk_rel
+		
+LIB_PUB_AS_ENGINE_T :
+	cd lib/libapplet/libpub/as_engine/as_engine_t; \
+	${MAKE} 
+	
+LIB_PUB_AS_ENGINE_T_ :
+	cd lib/libapplet/libpub/as_engine/as_engine_t; \
+	${MAKE} clean
+
+LIB_PUB_AS_ENGINE_T__ :
+	cd lib/libapplet/libpub/as_engine/as_engine_t; \
+	${MAKE} ddk_rel
+
+LIB_PUB_AS_ENGINE_T2 :
+	cd lib/libapplet/libpub/as_engine/as_engine_t2; \
+	${MAKE} 
+	
+LIB_PUB_AS_ENGINE_T2_ :
+	cd lib/libapplet/libpub/as_engine/as_engine_t2; \
+	${MAKE} clean
+
+LIB_PUB_AS_ENGINE_T2__ :
+	cd lib/libapplet/libpub/as_engine/as_engine_t2; \
+	${MAKE} ddk_rel
+
+LIB_PUB_AS_ENGINE_ISDBT :
+	cd lib/libapplet/libpub/as_engine/as_engine_isdbt; \
+	${MAKE} 
+	
+LIB_PUB_AS_ENGINE_ISDBT_ :
+	cd lib/libapplet/libpub/as_engine/as_engine_isdbt; \
+	${MAKE} clean
+
+LIB_PUB_AS_ENGINE_ISDBT__ :
+	cd lib/libapplet/libpub/as_engine/as_engine_isdbt; \
+	${MAKE} ddk_rel
+
+LIB_PUB_AS_S :
+	cd lib/libapplet/libpub/as_dvbs; \
+	${MAKE} 
+	
+LIB_PUB_AS_S_ :
+	cd lib/libapplet/libpub/as_dvbs; \
+	${MAKE} clean	
+
+LIB_PUB_AS_S__ :
+	cd lib/libapplet/libpub/as_dvbs; \
+	${MAKE} ddk_rel	
+		
+LIB_PUB_AS_C :
+	cd lib/libapplet/libpub/as_dvbc; \
+	${MAKE} 
+	
+LIB_PUB_AS_C_ :
+	cd lib/libapplet/libpub/as_dvbc; \
+	${MAKE} clean	
+
+LIB_PUB_AS_C__ :
+	cd lib/libapplet/libpub/as_dvbc; \
+	${MAKE} ddk_rel	
+LIB_PUB_AS_T :
+	cd lib/libapplet/libpub/as_dvbt; \
+	${MAKE} 
+	
+LIB_PUB_AS_T_ :
+	cd lib/libapplet/libpub/as_dvbt; \
+	${MAKE} clean	
+
+LIB_PUB_AS_T__ :
+	cd lib/libapplet/libpub/as_dvbt; \
+	${MAKE} ddk_rel	
+	
+LIB_PIP :
+	cd lib/libapplet/libpip; \
+	${MAKE} 
+	
+LIB_PIP_ :
+	cd lib/libapplet/libpip; \
+	${MAKE} clean	
+
+LIB_PIP__ :
+	cd lib/libapplet/libpip; \
+	${MAKE} ddk_rel	
+		
+LIB_UTILS :
+	cd lib/libstorage/libfs2/utils; \
+	${MAKE} 
+	
+LIB_UTILS_ :
+	cd lib/libstorage/libfs2/utils; \
+	${MAKE} clean
+
+LIB_UTILS__ :
+	cd lib/libstorage/libfs2/utils; \
+	${MAKE} ddk_rel
+		
+FS_MAIN :
+	cd lib/libstorage/libfs2; \
+	${MAKE}
+
+FS_MAIN_ :
+	cd lib/libstorage/libfs2; \
+	${MAKE} clean
+	
+FS_MAIN__ :
+	cd lib/libstorage/libfs2; \
+	${MAKE} ddk_rel	
+		
+OS_TDS2 :
+	cd os/tds2; \
+	  ${MAKE}
+
+OS_TDS2_ :
+	cd os/tds2; \
+	  ${MAKE} clean
+
+OS_TDS3 :
+	cd os/tds3; \
+	  ${MAKE}
+
+OS_TDS3_ :
+	cd os/tds3; \
+	  ${MAKE} clean
+
+UDI_IPANEL :
+	cd udi/ipanel; \
+	  ${MAKE}
+
+UDI_IPANEL_ :
+	cd udi/ipanel; \
+	  ${MAKE} clean
+
+UDI_MHEG:
+	cd udi/libmheg; \
+	  ${MAKE}
+
+UDI_MHEG_:
+	cd udi/libmheg; \
+	  ${MAKE} clean
+
+LIB_TFCA :
+	cd lib/libcas/tf; \
+	  ${MAKE}
+	  
+LIB_TFCA_ :
+	cd lib/libcas/tf; \
+	  ${MAKE} clean
+
+LIB_TFCA__ :
+	cd lib/libcas/tf; \
+	  ${MAKE} ddk_rel
+	  
+LIB_CDCA :
+	cd lib/libcas/cdca; \
+	  ${MAKE}	  
+
+LIB_CDCA_ :
+	cd lib/libcas/tf; \
+	  ${MAKE} clean
+
+LIB_CDCA__ :
+	cd lib/libcas/tf; \
+	  ${MAKE} ddk_rel
+	  
+LIB_JWTCA :
+	cd lib/libcas/jwtca; \
+	  ${MAKE}
+
+LIB_JWTCA_ :
+	cd lib/libcas/jwtca; \
+	  ${MAKE} clean
+
+LIB_ABVCA :
+	cd lib/libcas/abv; \
+	  ${MAKE}
+
+LIB_ABVCA_ :
+	cd lib/libcas/abv; \
+	  ${MAKE} clean
+	  
+LIB_ABVCA__ :
+	cd lib/libcas/abv; \
+	  ${MAKE} ddk_rel
+	  
+IRCA_VD :
+	cd lib/libcas/irdeto/virtual_drv; \
+	  ${MAKE}
+
+IRCA_VD_ :
+	cd lib/libcas/irdeto/virtual_drv; \
+	  ${MAKE} clean
+
+ARCH_M63 :
+	cd arch/mips/m63; \
+	  ${MAKE}
+ARCH_M63_ :
+	cd arch/mips/m63; \
+	  ${MAKE} clean
+	  
+ARCH_M63_S :
+	cd arch/mips/m63/m63_s; \
+	  ${MAKE}
+
+ARCH_M63_S_ :
+	cd arch/mips/m63/m63_s; \
+	  ${MAKE} clean
+
+PDD_M33 :
+	cd arch/mips/pdd; \
+	  ${MAKE}
+PDD_M33_ :
+	cd arch/mips/pdd; \
+	  ${MAKE} clean
+	  
+PDD_M38 :
+	cd arch/mips/pdd/m38; \
+	  ${MAKE}
+PDD_M38_ :
+	cd arch/mips/pdd/m38; \
+	  ${MAKE} clean	  
+
+HLD_BASE :
+	cd hld; \
+	  ${MAKE}
+
+HLD_BASE_ :
+	cd hld; \
+	  ${MAKE} clean
+
+HLD_BASE__ :
+	cd hld; \
+	  ${MAKE} ddk_rel
+
+BUS_PCI :
+	cd bus/pci; \
+	  ${MAKE}
+
+BUS_PCI_ :
+	cd bus/pci; \
+	  ${MAKE} clean
+
+BUS_PCI_M63 :
+	cd bus/pci/m63; \
+	  ${MAKE}
+
+BUS_PCI_M63_ :
+	cd bus/pci/m63; \
+	  ${MAKE} clean
+
+BUS_UP :
+	cd bus/up; \
+	  ${MAKE}
+	  
+BUS_UP_ :
+	cd bus/up; \
+	  ${MAKE} clean
+
+BUS_UP_M33 :
+	cd bus/up/m33; \
+	  ${MAKE}
+	  
+BUS_UP_M33_ :
+	cd bus/up/m33; \
+	  ${MAKE} clean
+
+BUS_SD_M33 :
+	cd bus/sd/m33; \
+	  ${MAKE}
+	  
+BUS_SD_M33_ :
+	cd bus/sd/m33; \
+	  ${MAKE} clean
+	  
+BUS_PINMUX_M36:
+	cd bus/pinmux/m36; \
+	  ${MAKE}	
+
+BUS_PINMUX_M36_:
+	cd bus/pinmux/m36; \
+	  ${MAKE} clean	
+	  
+BUS_M36_I2C_SLAVE :
+	cd bus/i2c_slave/m36; \
+	  ${MAKE}
+
+BUS_M36_I2C_SLAVE_ :
+	cd bus/i2c_slave/m36; \
+	  ${MAKE} clean
+
+BUS_M36_I2C_SLAVE__ :
+	cd bus/i2c_slave/m36; \
+	  ${MAKE} ddk_rel
+
+LLD_I2C_SLAVE :
+	cd bus/i2c_slave/m3101; \
+	  ${MAKE}
+
+LLD_I2C_SLAVE_ :
+	cd bus/i2c_slave/m3101; \
+	  ${MAKE} clean
+
+LLD_I2C_SLAVE__ :
+	cd bus/i2c_slave/m3101; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_LINUX :
+	cd bus/usb/usb_linux; \
+	  ${MAKE}
+
+BUS_USB_LINUX_ :
+	cd bus/usb/usb_linux; \
+	  ${MAKE}	clean
+
+BUS_USB_LINUX__ :
+	cd bus/usb/usb_linux; \
+	  ${MAKE}	ddk_rel
+
+USB_3G_MDM :
+	cd bus/usb/usb_linux/ali_3g_mdm; \
+	  ${MAKE}	  
+
+USB_3G_MDM_ :
+	cd bus/usb/usb_linux/ali_3g_mdm; \
+	  ${MAKE}	clean
+	  
+USB_3G_MDM__ :	  
+	cd bus/usb/usb_linux/ali_3g_mdm; \
+	  ${MAKE}	ddk_rel
+	  
+BUS_USB_HC_M36 :
+	cd bus/usb/hcd/m36; \
+	  ${MAKE}
+
+BUS_USB_HC_M36_ :
+	cd bus/usb/hcd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_HC_M36__ :
+	cd bus/usb/hcd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_USBD_M36 :
+	cd bus/usb/usbd/m36; \
+	  ${MAKE}
+
+BUS_USB_USBD_M36_ :
+	cd bus/usb/usbd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_USBD_M36__ :
+	cd bus/usb/usbd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_DEV_STOR_M36 :
+	cd bus/usb/device/storage/m36; \
+	  ${MAKE}
+
+BUS_USB_DEV_STOR_M36_ :
+	cd bus/usb/device/storage/m36; \
+	  ${MAKE} clean
+
+BUS_USB_DEV_STOR_M36__ :
+	cd bus/usb/device/storage/m36; \
+	  ${MAKE} ddk_rel
+	  
+BUS_USB_HC_M36_EX :
+	cd bus/usb/usb_ex/hcd/m36; \
+	  ${MAKE}
+
+BUS_USB_HC_M36_EX_ :
+	cd bus/usb/usb_ex/hcd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_HC_M36_EX__ :
+	cd bus/usb/usb_ex/hcd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_USBD_M36_EX :
+	cd bus/usb/usb_ex/usbd/m36; \
+	  ${MAKE}
+
+BUS_USB_USBD_M36_EX_ :
+	cd bus/usb/usb_ex/usbd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_USBD_M36_EX__ :
+	cd bus/usb/usb_ex/usbd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_DEV_STOR_M36_EX :
+	cd bus/usb/usb_ex/device/storage/m36; \
+	  ${MAKE}
+
+BUS_USB_DEV_STOR_M36_EX_ :
+	cd bus/usb/usb_ex/device/storage/m36; \
+	  ${MAKE} clean
+
+BUS_USB_DEV_STOR_M36_EX__ :
+	cd bus/usb/usb_ex/device/storage/m36; \
+	  ${MAKE} ddk_rel
+	  
+BUS_USB_HUB_M36_EX :
+	cd bus/usb/usb_ex/hub/m36; \
+	  ${MAKE}
+
+BUS_USB_HUB_M36_EX_ :
+	cd bus/usb/usb_ex/hub/m36; \
+	  ${MAKE} clean
+
+BUS_USB_HUB_M36_EX__ :
+	cd bus/usb/usb_ex/hub/m36; \
+	  ${MAKE} ddk_rel
+	
+BUS_USB_HC_M36F :
+	cd bus/usb/usb_m36f/hcd/m36; \
+	  ${MAKE}
+
+BUS_USB_HC_M36F_ :
+	cd bus/usb/usb_m36f/hcd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_HC_M36F_S :
+	cd bus/usb/usb_m36f_s/hcd/m36; \
+	  ${MAKE}
+
+BUS_USB_HC_M36F_S_ :
+	cd bus/usb/usb_m36f_s/hcd/m36; \
+	  ${MAKE} clean	  
+
+BUS_USB_HC_M36F__ :
+	cd bus/usb/usb_m36f/hcd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_USBD_M36F :
+	cd bus/usb/usb_m36f/usbd/m36; \
+	  ${MAKE}
+
+BUS_USB_USBD_M36F_ :
+	cd bus/usb/usb_m36f/usbd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_USBD_M36F__ :
+	cd bus/usb/usb_m36f/usbd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_USBD_M36F_S :
+	cd bus/usb/usb_m36f_s/usbd/m36; \
+	  ${MAKE}
+
+BUS_USB_USBD_M36F_S_ :
+	cd bus/usb/usb_m36f_s/usbd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_DEV_STOR_M36F :
+	cd bus/usb/usb_m36f/device/storage/m36; \
+	  ${MAKE}
+
+BUS_USB_DEV_STOR_M36F_ :
+	cd bus/usb/usb_m36f/device/storage/m36; \
+	  ${MAKE} clean
+
+BUS_USB_DEV_STOR_M36F__ :
+	cd bus/usb/usb_m36f/device/storage/m36; \
+	  ${MAKE} ddk_rel
+	  
+BUS_USB_DEV_STOR_M36F_S :
+	cd bus/usb/usb_m36f_s/device/storage/m36; \
+	  ${MAKE}
+
+BUS_USB_DEV_STOR_M36F_S_ :
+	cd bus/usb/usb_m36f_s/device/storage/m36; \
+	  ${MAKE} clean	  	  
+	  
+BUS_USB_DEV_NET_RT5370_M36F :
+	cd bus/usb/usb_m36f/device/net/rt5370; \
+	  ${MAKE}
+
+BUS_USB_DEV_NET_RT5370_M36F_ :
+	cd bus/usb/usb_m36f/device/net/rt5370; \
+	  ${MAKE} clean
+
+BUS_USB_DEV_NET_RT5370_M36F__ :
+	cd bus/usb/usb_m36f/device/net/rt5370; \
+	  ${MAKE} ddk_rel
+	  
+BUS_USB_DEV_NET_RT5370_M36F_S :
+	cd bus/usb/usb_m36f_s/device/net/rt5370; \
+	  ${MAKE}
+
+BUS_USB_DEV_NET_RT5370_M36F_S_ :
+	cd bus/usb/usb_m36f_s/device/net/rt5370; \
+	  ${MAKE} clean
+
+BUS_USB_DEV_NET_RT5370_M36F_S__ :
+	cd bus/usb/usb_m36f_s/device/net/rt5370; \
+	  ${MAKE} ddk_rel	  
+	  
+	  
+BUS_USB_HUB_M36F :
+	cd bus/usb/usb_m36f/hub/m36; \
+	  ${MAKE}
+
+BUS_USB_HUB_M36F_ :
+	cd bus/usb/usb_m36f/hub/m36; \
+	  ${MAKE} clean
+
+BUS_USB_HUB_M36F_S :
+	cd bus/usb/usb_m36f_s/hub/m36; \
+	  ${MAKE}
+
+BUS_USB_HUB_M36F_S_ :
+	cd bus/usb/usb_m36f_s/hub/m36; \
+	  ${MAKE} clean	  
+
+BUS_USB_HUB_M36F__ :
+	cd bus/usb/usb_m36f/hub/m36; \
+	  ${MAKE} ddk_rel	
+	
+	  
+BUS_USB_HC_M36_S2 :
+	cd bus/usb/usb_s2/hcd/m36; \
+	  ${MAKE}
+
+BUS_USB_HC_M36_S2_ :
+	cd bus/usb/usb_s2/hcd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_HC_M36_S2__ :
+	cd bus/usb/usb_s2/hcd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_USBD_M36_S2 :
+	cd bus/usb/usb_s2/usbd/m36; \
+	  ${MAKE}
+
+BUS_USB_USBD_M36_S2_ :
+	cd bus/usb/usb_s2/usbd/m36; \
+	  ${MAKE} clean
+
+BUS_USB_USBD_M36_S2__ :
+	cd bus/usb/usb_s2/usbd/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_USB_DEV_STOR_M36_S2 :
+	cd bus/usb/usb_s2/device/storage/m36; \
+	  ${MAKE}
+
+BUS_USB_DEV_STOR_M36_S2_ :
+	cd bus/usb/usb_s2/device/storage/m36; \
+	  ${MAKE} clean
+
+BUS_USB_DEV_STOR_M36_S2__ :
+	cd bus/usb/usb_s2/device/storage/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_I2C :
+	cd bus/i2c; \
+	  ${MAKE}
+
+BUS_I2C_ :
+	cd bus/i2c; \
+	  ${MAKE} clean
+
+BUS_I2C_GPIO :
+	cd bus/i2c/gpio; \
+	  ${MAKE}
+
+BUS_I2C_GPIO_ :
+	cd bus/i2c/gpio; \
+	  ${MAKE} clean
+
+BUS_I2C_GPIO__ :
+	cd bus/i2c/gpio; \
+	  ${MAKE} ddk_rel
+
+BUS_SPE_M33 :
+	cd bus/spe/m33; \
+	  ${MAKE}
+
+BUS_SPE_M33_ :
+	cd bus/spe/m33; \
+	  ${MAKE} clean
+
+BUS_SPE_M33__ :
+	cd bus/spe/m33; \
+	  ${MAKE} ddk_rel
+
+BUS_ACI :
+	cd bus/aci; \
+	  ${MAKE}
+
+BUS_ACI_ :
+	cd bus/aci; \
+	  ${MAKE} clean
+
+BUS_ACI_GPIO :
+	cd bus/aci/aci_gpio; \
+	  ${MAKE}
+
+BUS_ACI_GPIO_ :
+	cd bus/aci/aci_gpio; \
+	  ${MAKE} clean
+
+BUS_ACI_GPIO__ :
+	cd bus/aci/aci_gpio; \
+	  ${MAKE} ddk_rel
+
+BUS_ACI_SCB :
+	cd bus/aci/aci_scb; \
+	  ${MAKE}
+
+BUS_ACI_SCB_ :
+	cd bus/aci/aci_scb; \
+	  ${MAKE} clean
+
+BUS_ACI_SCB__ :
+	cd bus/aci/aci_scb; \
+	  ${MAKE} ddk_rel	  
+
+BUS_I2C_SCB :
+	cd bus/i2c/scb; \
+	  ${MAKE}
+
+BUS_I2C_SCB_ :
+	cd bus/i2c/scb; \
+	  ${MAKE} clean
+	  
+BUS_I2C_SCB__ :
+	cd bus/i2c/scb; \
+	  ${MAKE} ddk_rel	  
+
+BUS_I2C_SCB_REMOTE :
+	cd bus/i2c/scb_remote; \
+	  ${MAKE}
+
+BUS_I2C_SCB_REMOTE_ :
+	cd bus/i2c/scb_remote; \
+	  ${MAKE} clean
+	  
+BUS_I2C_SCB_REMOTE__ :
+	cd bus/i2c/scb_remote; \
+	  ${MAKE} ddk_rel	  
+
+BUS_SCI :
+	cd bus/sci; \
+	  ${MAKE}
+
+BUS_SCI_ :
+	cd bus/sci; \
+	  ${MAKE} clean
+
+BUS_SCI_UART :
+	cd bus/sci/uart; \
+	  ${MAKE}
+
+BUS_SCI_UART_ :
+	cd bus/sci/uart; \
+	  ${MAKE} clean
+
+BUS_SCI_UART__ :
+	cd bus/sci/uart; \
+	  ${MAKE} ddk_rel
+	  
+BUS_IDE :
+	cd bus/ide; \
+	  ${MAKE}
+
+BUS_IDE_ :
+	cd bus/ide; \
+	  ${MAKE} clean
+
+BUS_IDE_M36 :
+	cd bus/ide/m36; \
+	  ${MAKE}
+
+BUS_IDE_M36_ :
+	cd bus/ide/m36; \
+	  ${MAKE} clean
+
+BUS_IDE_M36__ :
+	cd bus/ide/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_IDE_M36_HD :
+	cd bus/ide/m36/m36_hd; \
+	  ${MAKE}
+
+BUS_IDE_M36_HD_ :
+	cd bus/ide/m36/m36_hd; \
+	  ${MAKE} clean
+
+BUS_IDE_M36_HD__ :
+	cd bus/ide/m36/m36_hd; \
+	  ${MAKE} ddk_rel
+	  
+BUS_SATA :
+	cd bus/sata; \
+	  ${MAKE}
+
+BUS_SATA_ :
+	cd bus/sata; \
+	  ${MAKE} clean
+
+BUS_SATA_M36F :
+	cd bus/sata/m36f; \
+	  ${MAKE}
+
+BUS_SATA_M36F_ :
+	cd bus/sata/m36f; \
+	  ${MAKE} clean
+
+BUS_SATA_M36F__ :
+	cd bus/sata/m36f; \
+	  ${MAKE} ddk_rel
+
+BUS_TSI :
+	cd bus/tsi; \
+	  ${MAKE}
+
+BUS_TSI_ :
+	cd bus/tsi; \
+	  ${MAKE} clean
+
+BUS_TSI_M36 :
+	cd bus/tsi/m36; \
+	  ${MAKE}
+
+BUS_TSI_M36_ :
+	cd bus/tsi/m36; \
+	  ${MAKE} clean
+
+BUS_TSI_M36__ :
+	cd bus/tsi/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_TSI_M33 :
+	cd bus/tsi/m33; \
+	  ${MAKE}
+
+BUS_TSI_M33_ :
+	cd bus/tsi/m33; \
+	  ${MAKE} clean
+
+BUS_TSG_M36 :
+	cd bus/tsg/m36; \
+	  ${MAKE}
+
+BUS_TSG_M36_ :
+	cd bus/tsg/m36; \
+	  ${MAKE} clean
+
+BUS_TSG_M36__ :
+	cd bus/tsg/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_DMA_M36 :
+	cd bus/dma/m36; \
+	  ${MAKE}
+
+BUS_DMA_M36_ :
+	cd bus/dma/m36; \
+	  ${MAKE} clean
+
+BUS_DMA_M36F :
+	cd bus/dma/m36f; \
+	  ${MAKE}
+
+BUS_DMA_M36F_ :
+	cd bus/dma/m36f; \
+	  ${MAKE} clean
+	  
+BUS_DMA_M36F__ :
+	cd bus/dma/m36f; \
+	  ${MAKE} ddk_rel
+
+BUS_DPLL :
+	cd bus/dpll; \
+	  ${MAKE}
+
+BUS_DPLL_ :
+	cd bus/dpll; \
+	  ${MAKE} clean
+BUS_CT1642 :
+	cd bus/ct1642; \
+	  ${MAKE}
+BUS_CT1642_ :
+	cd bus/ct1642; \
+	  ${MAKE} clean	  
+BUS_CT1642__ :
+	cd bus/ct1642; \
+	  ${MAKE} ddk_rel
+BUS_DOG :
+	cd bus/dog; \
+	  ${MAKE}
+
+BUS_DOG_ :
+	cd bus/dog; \
+	  ${MAKE} clean
+
+BUS_DOG_M33 :
+	cd bus/dog/m33; \
+	  ${MAKE}
+
+BUS_DOG_M33_ :
+	cd bus/dog/m33; \
+	  ${MAKE} clean
+
+BUS_DOG_M33__ :
+	cd bus/dog/m33; \
+	  ${MAKE} ddk_rel
+
+BUS_OTP :
+	cd bus/otp; \
+	  ${MAKE}
+
+BUS_OTP_ :
+	cd bus/otp; \
+	  ${MAKE} clean
+
+BUS_OTP_M33 :
+	cd bus/otp/m33; \
+	  ${MAKE}
+
+BUS_OTP_M33_ :
+	cd bus/otp/m33; \
+	  ${MAKE} clean  
+BUS_OTP_M33__ :
+	cd bus/otp/m33; \
+	  ${MAKE} ddk_rel  
+
+BUS_RTC_M36 :
+	cd bus/rtc/m36; \
+	  ${MAKE}
+
+BUS_RTC_M36_ :
+	cd bus/rtc/m36; \
+	  ${MAKE} clean
+
+BUS_EROM :
+	cd bus/erom; \
+	  ${MAKE}
+
+BUS_EROM_ :
+	cd bus/erom; \
+	  ${MAKE} clean
+
+BUS_EROM_M36 :
+	cd bus/erom/m36; \
+	  ${MAKE}
+
+BUS_EROM_M36_ :
+	cd bus/erom/m36; \
+	  ${MAKE} clean
+
+BUS_HDMI_M36 :
+	cd bus/hdmi/m36; \
+	  ${MAKE}
+
+BUS_HDMI_M36_ :
+	cd bus/hdmi/m36; \
+	  ${MAKE} clean
+BUS_HDMI_M36__ :
+	cd bus/hdmi/m36; \
+	  ${MAKE} ddk_rel
+
+BUS_HDMI_SEE :
+	cd bus/hdmi/see; \
+	  ${MAKE}
+
+BUS_HDMI_SEE_ :
+	cd bus/hdmi/see; \
+	  ${MAKE} clean
+
+BUS_HDMI_M36_S2 :
+	cd bus/hdmi/m36/m36_s2; \
+	  ${MAKE}
+
+BUS_HDMI_M36_S2_ :
+	cd bus/hdmi/m36/m36_s2; \
+	  ${MAKE} clean
+	  
+BUS_HDMI_CAT6611 :
+	cd bus/hdmi/cat/cat6611; \
+	  ${MAKE}
+
+BUS_HDMI_CAT6611_ :
+	cd bus/hdmi/cat/cat6611; \
+	  ${MAKE} clean
+
+BUS_HDMI_CAT6611__ :
+	cd bus/hdmi/cat/cat6611; \
+	  ${MAKE} ddk_rel
+	  
+BUS_HDMI_CAT6613 :
+	cd bus/hdmi/cat/cat6613; \
+	  ${MAKE}
+
+BUS_HDMI_CAT6613_ :
+	cd bus/hdmi/cat/cat6613; \
+	  ${MAKE} clean
+
+BUS_SHARE_PFLASH :
+	cd bus/share/pflash; \
+	  ${MAKE}
+
+BUS_SHARE_PFLASH_ :
+	cd bus/share/pflash; \
+	  ${MAKE} clean
+
+BUS_SHARE_PFLASH__ :
+	cd bus/share/pflash; \
+	  ${MAKE} ddk_rel
+
+BUS_SHARE_SFLASH :
+	cd bus/share/sflash; \
+	  ${MAKE}
+
+BUS_SHARE_SFLASH_ :
+	cd bus/share/sflash; \
+	  ${MAKE} clean
+
+BUS_SHARE_SFLASH__ :
+	cd bus/share/sflash; \
+	  ${MAKE} ddk_rel
+
+HLD_STO :
+	cd hld/sto; \
+	  ${MAKE}
+
+HLD_STO_ :
+	cd hld/sto; \
+	  ${MAKE} clean
+	  
+HLD_STO__ :
+	cd hld/sto; \
+	  ${MAKE} ddk_rel
+
+LLD_STO :
+	cd lld/sto; \
+	  ${MAKE}
+
+LLD_STO_ :
+	cd lld/sto; \
+	  ${MAKE} clean
+
+LLD_STO_RAM :
+	cd lld/sto/ram; \
+	  ${MAKE}
+
+LLD_STO_RAM_ :
+	cd lld/sto/ram; \
+	  ${MAKE} clean
+
+LLD_STO_AT24C04 :
+	cd lld/sto/at24c04; \
+	  ${MAKE}
+
+LLD_STO_AT24C04_ :
+	cd lld/sto/at24c04; \
+	  ${MAKE} clean
+
+LLD_STO_FLASH :
+	cd lld/sto/flash; \
+	  ${MAKE}
+
+LLD_STO_FLASH_ :
+	cd lld/sto/flash; \
+	  ${MAKE} clean
+
+LLD_STO_FLASH__ :
+	cd lld/sto/flash; \
+	  ${MAKE} ddk_rel
+
+LLD_STO_FLASH_SQI :
+	cd lld/sto/flash_sqi; \
+	  ${MAKE}
+
+LLD_STO_FLASH_SQI_ :
+	cd lld/sto/flash_sqi; \
+	  ${MAKE} clean
+
+LLD_STO_FLASH_SQI__ :
+	cd lld/sto/flash_sqi; \
+	  ${MAKE} ddk_rel
+
+LLD_STO_FLASH_SQI_S :
+	cd lld/sto/flash_sqi/flash_sqi_s; \
+	  ${MAKE}
+
+LLD_STO_FLASH_SQI_S_ :
+	cd lld/sto/flash_sqi/flash_sqi_s; \
+	  ${MAKE} clean
+
+LLD_STO_FLASH_SQI_S__ :
+	cd lld/sto/flash_sqi/flash_sqi_s; \
+	  ${MAKE} ddk_rel
+
+LLD_STO_NAND :
+	cd lld/sto/nand; \
+	  ${MAKE}
+
+LLD_STO_NAND_ :
+	cd lld/sto/nand; \
+	  ${MAKE} clean
+
+LLD_STO_NAND__ :
+	cd lld/sto/nand; \
+	  ${MAKE} ddk_rel
+
+LLD_STO_NAND_S :
+	cd lld/sto/nand/nand_s; \
+	  ${MAKE}
+
+LLD_STO_NAND_S_ :
+	cd lld/sto/nand/nand_s; \
+	  ${MAKE} clean
+
+LLD_STO_NAND_S__ :
+	cd lld/sto/nand/nand_s; \
+	  ${MAKE} ddk_rel
+	  
+HLD_NIM :
+	cd hld/nim; \
+	  ${MAKE}
+
+HLD_NIM_ :
+	cd hld/nim; \
+	  ${MAKE} clean
+	  
+HLD_NIM__ :
+	cd hld/nim; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM :
+	cd lld/nim; \
+	  ${MAKE}
+
+LLD_NIM_ :
+	cd lld/nim; \
+	  ${MAKE} clean
+
+LLD_NIM_S :
+	cd lld/nim/dvbs; \
+	  ${MAKE}
+
+LLD_NIM_S_ :
+	cd lld/nim/dvbs; \
+	  ${MAKE} clean
+
+LLD_NIM_S__ :
+	cd lld/nim/dvbs; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_C :
+	cd lld/nim/dvbc; \
+	  ${MAKE}
+
+LLD_NIM_C_ :
+	cd lld/nim/dvbc; \
+	  ${MAKE} clean
+
+LLD_NIM_C__ :
+	cd lld/nim/dvbc; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_TUN_R836 :
+	cd lld/nim/dvbt2/tun_r836; \
+	  ${MAKE}
+
+LLD_NIM_TUN_R836_ :
+	cd lld/nim/dvbt2/tun_r836; \
+	  ${MAKE} clean;
+
+LLD_NIM_TUN_R836__ :
+	cd lld/nim/dvbt2/tun_r836; \
+	  ${MAKE} ddk_rel;
+
+LLD_NIM_TUN_TDA18250 :
+	cd lld/nim/dvbc/NuTune_FC2226; \
+	  ${MAKE}
+
+LLD_NIM_TUN_TDA18250_ :
+	cd lld/nim/dvbc/NuTune_FC2226; \
+	  ${MAKE} clean
+
+LLD_NIM_TUN_TDA18250__ :
+	cd lld/nim/dvbc/NuTune_FC2226; \
+	  ${MAKE} ddk_rel	  
+	  
+LLD_NIM_S2 :
+	cd lld/nim/dvbs2/m36; \
+	  ${MAKE}
+	  
+LLD_NIM_S2_ :
+	cd lld/nim/dvbs2/m36; \
+	  ${MAKE} clean
+
+LLD_NIM_S2__ :
+	cd lld/nim/dvbs2/m36; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_S2_3501 :
+	cd lld/nim/dvbs2/m3501; \
+	  ${MAKE}
+	  
+LLD_NIM_S2_3501_ :
+	cd lld/nim/dvbs2/m3501; \
+	  ${MAKE} clean
+
+LLD_NIM_S2_3501__ :
+	cd lld/nim/dvbs2/m3501; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_S2_C3505 :
+	cd lld/nim/dvbs2/c3505; \
+	  ${MAKE}
+	  
+LLD_NIM_S2_C3505_ :
+	cd lld/nim/dvbs2/c3505; \
+	  ${MAKE} clean
+
+LLD_NIM_S2_C3505__ :
+	cd lld/nim/dvbs2/c3505; \
+	  ${MAKE} ddk_rel
+	
+LLD_NIM_S2_C3501H:
+	cd lld/nim/dvbs2/c3501h; \
+	  ${MAKE}
+	  
+LLD_NIM_S2_C3501H_:
+	cd lld/nim/dvbs2/c3501h; \
+	  ${MAKE} clean
+
+LLD_NIM_S2_C3501H__ :
+	cd lld/nim/dvbs2/c3501h; \
+	  ${MAKE} ddk_rel
+	    
+LLD_NIM_S2_3501_S :
+	cd lld/nim/dvbs2/m3501/m3501_s; \
+	  ${MAKE}
+	  
+LLD_NIM_S2_3501_S_ :
+	cd lld/nim/dvbs2/m3501/m3501_s; \
+	  ${MAKE} clean
+
+LLD_NIM_S2_3501_S__ :
+	cd lld/nim/dvbs2/m3501/m3501_s; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_S2_A :
+	cd lld/nim/dvbs2/m36/m36_a; \
+	  ${MAKE}
+	  
+LLD_NIM_S2_A_ :
+	cd lld/nim/dvbs2/m36/m36_a; \
+	  ${MAKE} clean
+
+LLD_NIM_S2_A__ :
+	cd lld/nim/dvbs2/m36/m36_a; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_S2_TUNER :
+	cd lld/nim/dvbs2; \
+	  ${MAKE}
+	  
+LLD_NIM_S2_TUNER_ :
+	cd lld/nim/dvbs2; \
+	  ${MAKE} clean
+
+LLD_NIM_S2_TUNER__ :
+	cd lld/nim/dvbs2; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_ATSC :
+	cd lld/nim/atsc; \
+	  ${MAKE}
+
+LLD_NIM_ATSC_ :
+	cd lld/nim/atsc; \
+	  ${MAKE} clean
+
+LLD_NIM_ATSC__ :
+	cd lld/nim/atsc; \
+	  ${MAKE} ddk_rel
+	  
+HLD_SEC_BOOT:
+	cd hld/sec_boot/;\
+		${MAKE}
+		
+HLD_SEC_BOOT_:
+	cd hld/sec_boot/;\
+		${MAKE}	clean		
+		
+HLD_SEC_BOOT__:
+	cd hld/sec_boot/;\
+		${MAKE}	ddk_rel
+	
+LLD_NIM_DVBT :
+	cd lld/nim/dvbt; \
+	  ${MAKE}
+
+LLD_NIM_DVBT_ :
+	cd lld/nim/dvbt; \
+	  ${MAKE} clean
+
+LLD_NIM_DVBT__ :
+	cd lld/nim/dvbt; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_DVBT2 :
+	cd lld/nim/dvbt2; \
+	  ${MAKE}
+
+LLD_NIM_DVBT2_ :
+	cd lld/nim/dvbt2; \
+	  ${MAKE} clean
+
+LLD_NIM_DVBT2__ :
+	cd lld/nim/dvbt2; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_CHINAT:
+	cd lld/nim/chinat; \
+	  ${MAKE}
+
+LLD_NIM_CHINAT_ :
+	cd lld/nim/chinat; \
+	  ${MAKE} clean
+
+LLD_NIM_CHINAT__ :
+	cd lld/nim/chinat; \
+	  ${MAKE} ddk_rel
+	  
+LLD_NIM_ISDBT :
+	cd lld/nim/isdbt; \
+	  ${MAKE}
+
+LLD_NIM_ISDBT_ :
+	cd lld/nim/isdbt; \
+	  ${MAKE} clean
+
+LLD_NIM_ISDBT__ :
+	cd lld/nim/isdbt; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_M3101 :
+	cd lld/nim/dvbt/m3101; \
+	  ${MAKE}
+
+LLD_NIM_M3101_ :
+	cd lld/nim/dvbt/m3101; \
+	  ${MAKE} clean
+
+LLD_NIM_M3101__ :
+	cd lld/nim/dvbt/m3101; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_S3811 :
+	cd lld/nim/isdbt/S3811; \
+	  ${MAKE}
+
+LLD_NIM_S3811_ :
+	cd lld/nim/isdbt/S3811; \
+	  ${MAKE} clean
+
+LLD_NIM_S3811__ :
+	cd lld/nim/isdbt/S3811; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_S3821 :
+	cd lld/nim/dvbt2/S3821; \
+	  ${MAKE}
+
+LLD_NIM_S3821_ :
+	cd lld/nim/dvbt2/S3821; \
+	  ${MAKE} clean
+
+LLD_NIM_S3821__ :
+	cd lld/nim/dvbt2/S3821; \
+	  ${MAKE} ddk_rel
+  
+LLD_NIM_S3281_C :
+	cd lld/nim/dvbc/S3281; \
+	  ${MAKE}
+
+LLD_NIM_S3281_C_ :
+	cd lld/nim/dvbc/S3281; \
+	  ${MAKE} clean
+
+LLD_NIM_S3281_C__ :
+	cd lld/nim/dvbc/S3281; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_MXL241 :
+	cd lld/nim/dvbc/mxl241; \
+	  ${MAKE}
+
+LLD_NIM_MXL241_ :
+	cd lld/nim/dvbc/mxl241; \
+	  ${MAKE} clean
+
+LLD_NIM_MXL241__ :
+	cd lld/nim/dvbc/mxl241; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_MXL603 :
+	cd lld/nim/combo/tun_mxl603; \
+	  ${MAKE}
+
+LLD_NIM_MXL603_ :
+	cd lld/nim/combo/tun_mxl603; \
+	  ${MAKE} clean
+
+LLD_NIM_MXL603__ :
+	cd lld/nim/combo/tun_mxl603; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_COMBO_TUN_SI2141 :
+	cd lld/nim/combo/tun_si2141; \
+	  ${MAKE}
+
+LLD_NIM_COMBO_TUN_SI2141_ :
+	cd lld/nim/combo/tun_si2141; \
+	  ${MAKE} clean
+
+LLD_NIM_COMBO_TUN_SI2141__ :
+	cd lld/nim/combo/tun_si2141; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_COMBO :
+	cd lld/nim/combo; \
+	  ${MAKE}
+
+LLD_NIM_COMBO_ :
+	cd lld/nim/combo; \
+	  ${MAKE} clean
+
+LLD_NIM_COMBO__ :
+	cd lld/nim/combo; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_S3281_S :
+	cd lld/nim/dvbs/S3281; \
+	  ${MAKE}
+
+LLD_NIM_S3281_S_ :
+	cd lld/nim/dvbs/S3281; \
+	  ${MAKE} clean
+
+LLD_NIM_S3281_S__ :
+	cd lld/nim/dvbs/S3281; \
+	  ${MAKE} ddk_rel
+	  
+LLD_NIM_ATSC_SDK :
+	cd lld/nim/atsc; \
+	  ${MAKE} -f makefile_sdk
+
+LLD_NIM_ATSC_SDK_ :
+	cd lld/nim/atsc; \
+	  ${MAKE} -f makefile_sdk clean
+
+LLD_NIM_ATSC_SDK__ :
+	cd lld/nim/atsc; \
+	  ${MAKE} -f makefile_sdk ddk_rel
+	  
+LLD_NIM_ISDBT_SDK :
+	cd lld/nim/isdbt; \
+	  ${MAKE} -f makefile_sdk
+
+LLD_NIM_ISDBT_SDK_ :
+	cd lld/nim/isdbt; \
+	  ${MAKE} -f makefile_sdk clean
+
+LLD_NIM_ISDBT_SDK__ :
+	cd lld/nim/isdbt; \
+	  ${MAKE} -f makefile_sdk ddk_rel
+	  
+LLD_NIM_LNB :
+	cd lld/nim/lnb; \
+	  ${MAKE}
+
+LLD_NIM_LNB_ :
+	cd lld/nim/lnb; \
+	  ${MAKE} clean
+
+LLD_NIM_LNB__ :
+	cd lld/nim/lnb; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_AUTOSCAN :
+	cd lld/nim/m33; \
+	  ${MAKE}
+
+LLD_NIM_AUTOSCAN_ :
+	cd lld/nim/m33; \
+	  ${MAKE} clean
+
+LLD_NIM_AUTOSCAN__ :
+	cd lld/nim/m33; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_C_TDA10025:
+	cd lld/nim/dvbc/TDA10025; \
+	  ${MAKE}
+
+LLD_NIM_C_TDA10025_:
+	cd lld/nim/dvbc/TDA10025; \
+	  ${MAKE} clean
+
+LLD_NIM_C_TDA10025__:
+	cd lld/nim/dvbc/TDA10025; \
+	  ${MAKE} ddk_rel
+
+LLD_TUN_C_TDA18250AB:
+	cd lld/nim/dvbc/tun_tda18250ab; \
+	  ${MAKE}
+
+LLD_TUN_C_TDA18250AB_:
+	cd lld/nim/dvbc/tun_tda18250ab; \
+	  ${MAKE} clean
+
+LLD_TUN_C_TDA18250AB__:
+	cd lld/nim/dvbc/tun_tda18250ab; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_C_ATMB2040 :
+	cd lld/nim/dvbc/atbm2040; \
+	  ${MAKE}
+
+LLD_NIM_C_ATMB2040_ :
+	cd lld/nim/dvbc/atbm2040; \
+	  ${MAKE} clean
+
+LLD_NIM_C_ATMB2040__ :
+	cd lld/nim/dvbc/atbm2040; \
+	  ${MAKE} ddk_rel
+
+LLD_NIM_C_ATMB253 :
+	cd lld/nim/dvbc/atbm253; \
+	  ${MAKE}
+
+LLD_NIM_C_ATMB253_ :
+	cd lld/nim/dvbc/atbm253; \
+	  ${MAKE} clean
+
+LLD_NIM_C_ATMB253__ :
+	cd lld/nim/dvbc/atbm253; \
+	  ${MAKE} ddk_rel
+	  
+LLD_NIM_CX24116:
+	cd lld/nim/dvbs2/cx24116; \
+	  ${MAKE}
+	  
+LLD_NIM_CX24116_ :
+	cd lld/nim/dvbs2/cx24116; \
+	  ${MAKE} clean
+
+LLD_NIM_CX24116__ :
+	cd lld/nim/dvbs2/cx24116; \
+	  ${MAKE} ddk_rel
+	  
+LLD_PMU_M36:
+	cd lld/pmu/m36;\
+		${MAKE}	  
+LLD_PMU_M36_:
+	cd lld/pmu/m36;\
+		${MAKE}	clean  		
+LLD_CIC :
+	cd lld/cic; \
+	  ${MAKE}
+
+LLD_CIC_ :
+	cd lld/cic; \
+	  ${MAKE} clean
+
+LLD_CIC_M36 :
+	cd lld/cic/m36; \
+	  ${MAKE}
+
+LLD_CIC_M36_ :
+	cd lld/cic/m36; \
+	  ${MAKE} clean
+
+LLD_CIC_M36__ :
+	cd lld/cic/m36; \
+	  ${MAKE} ddk_rel
+
+HLD_DMX :
+	cd hld/dmx; \
+	  ${MAKE}
+
+HLD_DMX_ :
+	cd hld/dmx; \
+	  ${MAKE} clean
+	  
+HLD_DMX__ :
+	cd hld/dmx; \
+	  ${MAKE} ddk_rel
+	  
+HLD_DMX_S :
+	cd hld/dmx/dmx_s; \
+	  ${MAKE}
+
+HLD_DMX_S_ :
+	cd hld/dmx/dmx_s; \
+	  ${MAKE} clean
+	  
+HLD_DMX_S__ :
+	cd hld/dmx/dmx_s; \
+	  ${MAKE} ddk_rel
+	  
+LLD_DMX :
+	cd lld/dmx; \
+	  ${MAKE}
+
+LLD_DMX_ :
+	cd lld/dmx; \
+	  ${MAKE} clean
+
+LLD_DMX_M36 :
+	cd lld/dmx/m36; \
+	  ${MAKE}
+
+LLD_DMX_M36_ :
+	cd lld/dmx/m36; \
+	  ${MAKE} clean
+
+LLD_DMX_M36_S :
+	cd lld/dmx/m36/m36_s; \
+	  ${MAKE}
+
+LLD_DMX_M36_S_ :
+	cd lld/dmx/m36/m36_s; \
+	  ${MAKE} clean
+
+LLD_DMX_M36_ATSC :
+	cd lld/dmx/m36_atsc; \
+	  ${MAKE}
+
+LLD_DMX_M36_ATSC_ :
+	cd lld/dmx/m36_atsc; \
+	  ${MAKE} clean
+
+LLD_DMX_M36_T :
+	cd lld/dmx/m36/m36_t; \
+	  ${MAKE}
+
+LLD_DMX_M36_T_ :
+	cd lld/dmx/m36/m36_t; \
+	  ${MAKE} clean
+
+LLD_DMX_M36F :
+	cd lld/dmx/m36f; \
+	  ${MAKE}
+
+LLD_DMX_M36F_ :
+	cd lld/dmx/m36f; \
+	  ${MAKE} clean
+
+LLD_DMX_M36F__ :
+	cd lld/dmx/m36f; \
+	  ${MAKE} ddk_rel
+	  
+LLD_DMX_M36F_S :
+	cd lld/dmx/m36f/m36f_s; \
+	  ${MAKE}
+
+LLD_DMX_M36F_S_ :
+	cd lld/dmx/m36f/m36f_s; \
+	  ${MAKE} clean
+
+LLD_DMX_M36F_T :
+	cd lld/dmx/m36f/m36f_t; \
+	  ${MAKE}
+
+LLD_DMX_M36F_T_ :
+	cd lld/dmx/m36f/m36f_t; \
+	  ${MAKE} clean
+	  
+LLD_DMX_M36F_M3701E :
+	cd lld/dmx/m36f/m36f_m3701e; \
+	  ${MAKE}
+
+LLD_DMX_M36F_M3701E_ :
+	cd lld/dmx/m36f/m36f_m3701e; \
+	  ${MAKE} clean
+	  
+LLD_DMX_M36F_M3701E_S :
+	cd lld/dmx/m36f/m36f_m3701e/m36f_m3701e_s; \
+	  ${MAKE}
+
+LLD_DMX_M36F_M3701E_S_ :
+	cd lld/dmx/m36f/m36f_m3701e/m36f_m3701e_s; \
+	  ${MAKE} clean
+
+LLD_DMX_M36F_M3701E_S2 :
+	cd lld/dmx/m36f/m36f_m3701e/m36f_m3701e_s2; \
+	  ${MAKE}
+
+LLD_DMX_M36F_M3701E_S2_ :
+	cd lld/dmx/m36f/m36f_m3701e/m36f_m3701e_s2; \
+	  ${MAKE} clean
+	  
+LLD_DMX_M33 :
+	cd lld/dmx/m33; \
+	  ${MAKE}
+
+LLD_DMX_M33_ :
+	cd lld/dmx/m33; \
+	  ${MAKE} clean
+
+LLD_DMX_M33_S2 :
+	cd lld/dmx/m33/m33_s2; \
+	  ${MAKE}
+
+LLD_DMX_M33_S2_ :
+	cd lld/dmx/m33/m33_s2; \
+	  ${MAKE} clean
+
+HLD_DECV :
+	cd hld/decv; \
+	  ${MAKE}
+
+HLD_DECV_ :
+	cd hld/decv; \
+	  ${MAKE} clean
+	  
+HLD_DECV__ :
+	cd hld/decv; \
+	  ${MAKE} ddk_rel
+
+LLD_DECV :
+	cd lld/decv; \
+	  ${MAKE}
+
+LLD_DECV_ :
+	cd lld/decv; \
+	  ${MAKE} clean
+
+LLD_DECV_M36 :
+	cd lld/decv/m36; \
+	  ${MAKE}
+
+LLD_DECV_M36_ :
+	cd lld/decv/m36; \
+	  ${MAKE} clean
+
+LLD_DECV_M36_S :
+	cd lld/decv/m36/m36_s; \
+	  ${MAKE}
+
+LLD_DECV_M36_S_ :
+	cd lld/decv/m36/m36_s; \
+	  ${MAKE} clean
+	  
+LLD_DECV_M36_C :
+	cd lld/decv/m36/m36_c; \
+	  ${MAKE}
+
+LLD_DECV_M36_C_ :
+	cd lld/decv/m36/m36_c; \
+	  ${MAKE} clean
+
+LLD_DECV_M36_ATSC :
+	cd lld/decv/m36_atsc; \
+	  ${MAKE}
+
+LLD_DECV_M36_ATSC_ :
+	cd lld/decv/m36_atsc; \
+	  ${MAKE} clean
+
+LLD_DECV_M36_3383 :
+	cd lld/decv/m36_m3383; \
+	  ${MAKE}
+
+LLD_DECV_M36_3383_ :
+	cd lld/decv/m36_m3383; \
+	  ${MAKE} clean
+
+LLD_DECV_M36_M3701E :
+	cd lld/decv/m36/m36_m3701e; \
+	  ${MAKE}
+
+LLD_DECV_M36_M3701E_ :
+	cd lld/decv/m36/m36_m3701e; \
+	  ${MAKE} clean
+	  
+LLD_DECV_M33 :
+	cd lld/decv/m33; \
+	  ${MAKE}
+
+LLD_DECV_M33_ :
+	cd lld/decv/m33; \
+	  ${MAKE} clean
+
+LLD_DCEV_CFG :
+	cd lld/decv/vdec_cfg; \
+	  ${MAKE}
+
+LLD_DCEV_CFG_ :
+	cd lld/decv/vdec_cfg; \
+	  ${MAKE} clean	  
+	  
+LLD_DCEV_CFG_C :
+	cd lld/decv/vdec_cfg/vdec_cfg_c; \
+	  ${MAKE}
+
+LLD_DCEV_CFG_C_ :
+	cd lld/decv/vdec_cfg/vdec_cfg_c; \
+	  ${MAKE} clean	  
+
+LLD_DECV_AVC :
+	cd lld/decv/avc; \
+	  ${MAKE}
+
+LLD_DECV_AVC_ :
+	cd lld/decv/avc; \
+	  ${MAKE} clean
+LLD_DECV_VC1 :
+	cd lld/decv/vc1; \
+	  ${MAKE}
+
+LLD_DECV_VC1_ :
+	cd lld/decv/vc1; \
+	  ${MAKE} clean
+
+LLD_DECV_AVS :
+	cd lld/decv/avs; \
+	  ${MAKE}
+
+LLD_DECV_AVS_ :
+	cd lld/decv/avs; \
+	  ${MAKE} clean
+
+LLD_DECV_AVC_M3701E :
+	cd lld/decv/avc/avc_m3701e; \
+	  ${MAKE}
+
+LLD_DECV_AVC_M3701E_ :
+	cd lld/decv/avc/avc_m3701e; \
+	  ${MAKE} clean
+	  
+LLD_DECV_AVC_S :
+	cd lld/decv/avc/avc_s; \
+	  ${MAKE}
+
+LLD_DECV_AVC_S_ :
+	cd lld/decv/avc/avc_s; \
+	  ${MAKE} clean
+
+LLD_DECV_AVC_T :
+	cd lld/decv/avc/avc_t; \
+	  ${MAKE}
+
+LLD_DECV_AVC_T_ :
+	cd lld/decv/avc/avc_t; \
+	  ${MAKE} clean
+
+LLD_DECV_AVC_3383 :
+	cd lld/decv/avc/avc_m3383; \
+	  ${MAKE}
+
+LLD_DECV_AVC_3383_ :
+	cd lld/decv/avc/avc_m3383; \
+	  ${MAKE} clean
+	  
+HLD_VENC:
+	cd hld/venc; \
+	  ${MAKE}
+
+HLD_VENC_:
+	cd hld/venc; \
+	  ${MAKE} clean
+
+HLD_VENC__:
+	cd hld/venc; \
+	  ${MAKE} ddk_rel
+	  
+LLD_VENC :
+	cd lld/venc; \
+	  ${MAKE}
+
+LLD_VENC_ :
+	cd lld/venc; \
+	  ${MAKE} clean
+
+LLD_VENC_M33 :
+	cd lld/venc/m33; \
+	  ${MAKE}
+
+LLD_VENC_M33_ :
+	cd lld/venc/m33; \
+	  ${MAKE} clean
+	  
+LLD_VENC_M33__ :
+	cd lld/venc/m33; \
+	  ${MAKE} ddk_rel
+	  
+LLD_VENC_IMG :
+	cd lld/venc/img; \
+	  ${MAKE}
+
+LLD_VENC_IMG_ :
+	cd lld/venc/img; \
+	  ${MAKE} clean
+
+HLD_GE :
+	cd hld/ge; \
+	  ${MAKE}
+
+HLD_GE_ :
+	cd hld/ge; \
+	  ${MAKE} clean
+
+HLD_GE__ :
+	cd hld/ge; \
+	  ${MAKE} ddk_rel	  
+
+HLD_GE_DDK :
+	cd hld/ge; \
+	  ${MAKE} -f Makefile_ddk
+
+HLD_GE_DDK_ :
+	cd hld/ge; \
+	  ${MAKE} -f Makefile_ddk clean
+
+LLD_GE_M36 :
+	cd lld/ge/m36; \
+	  ${MAKE}
+
+LLD_GE_M36_ :
+	cd lld/ge/m36; \
+	  ${MAKE} clean
+
+LLD_GE_M33F :
+	cd lld/ge/m33f; \
+	  ${MAKE}
+
+LLD_GE_M33F_ :
+	cd lld/ge/m33f; \
+	  ${MAKE} clean
+
+LLD_GE_M36_ATSC :
+	cd lld/ge/m36_atsc; \
+	  ${MAKE}
+
+LLD_GE_M36_ATSC_ :
+	cd lld/ge/m36_atsc; \
+	  ${MAKE} clean
+
+LLD_GE_M36F :
+	cd lld/ge/m36f; \
+	  ${MAKE}
+
+LLD_GE_M36F_ :
+	cd lld/ge/m36f; \
+	  ${MAKE} clean
+
+LLD_GE_M36F__ :
+	cd lld/ge/m36f; \
+	  ${MAKE} ddk_rel
+	  
+LLD_GMA_M3921 :
+	cd lld/gma/m3921; \
+	  ${MAKE} all
+
+LLD_GMA_M3921_ :
+	cd lld/gma/m3921; \
+	  ${MAKE} clean
+	  
+LLD_GMA_M3921__ :
+	cd lld/gma/m3921; \
+	  ${MAKE} ddk_rel
+	  
+HLD_VP :
+	cd hld/dis; \
+	  ${MAKE}
+
+HLD_VP_ :
+	cd hld/dis; \
+	  ${MAKE} clean
+	  
+HLD_VP__ :
+	cd hld/dis; \
+	  ${MAKE} ddk_rel
+
+LLD_DIS :
+	cd lld/dis; \
+	  ${MAKE}
+
+LLD_DIS_ :
+	cd lld/dis; \
+	  ${MAKE} clean
+
+LLD_VP_M36 :
+	cd lld/dis/m36; \
+	  ${MAKE}
+
+LLD_VP_M36_ :
+	cd lld/dis/m36; \
+	  ${MAKE} clean
+	
+LLD_VP_M36_S :
+	cd lld/dis/m36/m36_s; \
+	  ${MAKE}
+
+LLD_VP_M36_S_ :
+	cd lld/dis/m36/m36_s; \
+	  ${MAKE} clean
+
+LLD_VP_M36_T :
+	cd lld/dis/m36/m36_t; \
+	  ${MAKE}
+
+LLD_VP_M36_T_ :
+	cd lld/dis/m36/m36_t; \
+	  ${MAKE} clean
+
+LLD_VP_M36_ATSC :
+	cd lld/dis/m36_atsc; \
+	  ${MAKE}
+
+LLD_VP_M36_ATSC_ :
+	cd lld/dis/m36_atsc; \
+	  ${MAKE} clean
+
+LLD_VP_M33 :
+	cd lld/dis/m33; \
+	  ${MAKE}
+
+LLD_VP_M33_ :
+	cd lld/dis/m33; \
+	  ${MAKE} clean
+
+LLD_VP_M36F :
+	cd lld/dis/m36f; \
+	  ${MAKE}
+
+LLD_VP_M36F_ :
+	cd lld/dis/m36f; \
+	  ${MAKE} clean
+
+LLD_VP_M36F_3383 :
+	cd lld/dis/m36f_m3383; \
+	  ${MAKE}
+
+LLD_VP_M36F_3383_ :
+	cd lld/dis/m36f_m3383; \
+	  ${MAKE} clean
+
+LLD_VP_M36F_M3701E :
+	cd lld/dis/m36f/m36f_m3701e; \
+	  ${MAKE}
+
+LLD_VP_M36F_M3701E_ :
+	cd lld/dis/m36f/m36f_m3701e; \
+	  ${MAKE} clean
+	  
+LLD_VP_M36F_S:
+	cd lld/dis/m36f/m36f_s; \
+	  ${MAKE}
+
+LLD_VP_M36F_S_ :
+	cd lld/dis/m36f/m36f_s; \
+	  ${MAKE} clean
+
+LLD_VP_M36F_T:
+	cd lld/dis/m36f/m36f_t; \
+	  ${MAKE}
+
+LLD_VP_M36F_T_ :
+	cd lld/dis/m36f/m36f_t; \
+	  ${MAKE} clean
+	  
+LLD_VP_M36G:
+	cd lld/dis/m36g; \
+	  ${MAKE}
+
+LLD_VP_M36G_ :
+	cd lld/dis/m36g; \
+	  ${MAKE} clean
+	  
+LLD_VP_M36G_MINI:
+	cd lld/dis/m36g/mini; \
+	  ${MAKE}
+
+LLD_VP_M36G_MINI_ :
+	cd lld/dis/m36g/mini; \
+	${MAKE} clean
+	
+LLD_VP_M3921:
+	cd lld/dis/m3921; \
+	  ${MAKE}
+
+LLD_VP_M3921_ :
+	cd lld/dis/m3921; \
+	  ${MAKE} clean
+
+LLD_TVE_M3921:
+	cd lld/tvenc; \
+	  ${MAKE}
+	  
+LLD_TVE_M3921_ :
+	cd lld/tvenc; \
+	  ${MAKE} clean
+	  
+HLD_VBI:
+	cd hld/vbi; \
+	  ${MAKE}
+
+HLD_VBI_:
+	cd hld/vbi; \
+	  ${MAKE} clean
+	  
+HLD_VBI__:
+	cd hld/vbi; \
+	  ${MAKE} ddk_rel
+
+LLD_VBI:
+	cd lld/vbi/m33; \
+	  ${MAKE}
+
+LLD_VBI_:
+	cd lld/vbi/m33; \
+	  ${MAKE} clean
+	  
+LLD_VBI__:
+	cd lld/vbi/m33; \
+	  ${MAKE} ddk_rel	  
+
+LLD_VBI_M33:
+	cd lld/vbi/m33; \
+	  ${MAKE}
+
+LLD_VBI_M33_:
+	cd lld/vbi/m33; \
+	  ${MAKE} clean
+	  
+LLD_VBI_M33__:
+	cd lld/vbi/m33; \
+	  ${MAKE} ddk_rel
+
+HLD_DECA :
+	cd hld/deca; \
+	  ${MAKE}
+
+HLD_DECA_ :
+	cd hld/deca; \
+	  ${MAKE} clean
+	  
+HLD_DECA__ :
+	cd hld/deca; \
+	  ${MAKE} ddk_rel
+
+LLD_DECA :
+	cd lld/deca; \
+	  ${MAKE}
+
+LLD_DECA_ :
+	cd lld/deca; \
+	  ${MAKE} clean
+
+LLD_DECA_M36 :
+	cd lld/deca/m36; \
+	  ${MAKE}
+
+LLD_DECA_M36_ :
+	cd lld/deca/m36; \
+	  ${MAKE} clean
+
+LLD_DECA_M36F :
+	cd lld/deca/m36f; \
+	  ${MAKE}
+
+LLD_DECA_M36F_ :
+	cd lld/deca/m36f; \
+	  ${MAKE} clean
+
+LLD_DECA_M31 :
+	cd lld/deca/m31; \
+	  ${MAKE}
+
+LLD_DECA_M31_ :
+	cd lld/deca/m31; \
+	  ${MAKE} clean
+	  
+LLD_DECA_M31_HD_STREAM_DECODER :
+	cd lld/deca/m31/stream_decoder; \
+	  ${MAKE}
+
+LLD_DECA_M31_HD_STREAM_DECODER_ :
+	cd lld/deca/m31/stream_decoder; \
+	  ${MAKE} clean
+
+LLD_DECA_M32_HD_STREAM_DECODER :
+	cd lld/deca/m31/stream_decoder_m32; \
+	  ${MAKE}
+
+LLD_DECA_M32_HD_STREAM_DECODER_ :
+	cd lld/deca/m31/stream_decoder_m32; \
+	  ${MAKE} clean
+	  
+LLD_DECA_M36_T :
+	cd lld/deca/m36/m36_t; \
+	  ${MAKE}
+
+LLD_DECA_M36_T_ :
+	cd lld/deca/m36/m36_t; \
+	  ${MAKE} clean
+
+LLD_DECA_M36_S :
+	cd lld/deca/m36/m36_s; \
+	  ${MAKE}
+
+LLD_DECA_M36_S_ :
+	cd lld/deca/m36/m36_s; \
+	  ${MAKE} clean
+	  
+LLD_DECA_M36F_T :
+	cd lld/deca/m36f/m36f_t; \
+	  ${MAKE}
+
+LLD_DECA_M36F_T_ :
+	cd lld/deca/m36f/m36f_t; \
+	  ${MAKE} clean
+
+LLD_DECA_M36F_M3701E :
+	cd lld/deca/m36f/m36f_m3701e; \
+	  ${MAKE}
+
+LLD_DECA_M36F_M3701E_ :
+	cd lld/deca/m36f/m36f_m3701e; \
+	  ${MAKE} clean
+
+LLD_DECA_M36F_M3701E_S :
+	cd lld/deca/m36f/m36f_m3701e/m36f_m3701e_s; \
+	  ${MAKE}
+
+LLD_DECA_M36F_M3701E_S_ :
+	cd lld/deca/m36f/m36f_m3701e/m36f_m3701e_s; \
+	  ${MAKE} clean
+
+LLD_DECA_M36_HD_STREAM_DECODER :
+	cd lld/deca/m36/stream_decoder; \
+	  ${MAKE}
+
+LLD_DECA_M36_HD_STREAM_DECODER_ :
+	cd lld/deca/m36/stream_decoder; \
+	  ${MAKE} clean
+
+LLD_DECA_M36_HD_STREAM_DECODER_S :
+	cd lld/deca/m36/m36_s/stream_decoder; \
+	  ${MAKE}
+
+LLD_DECA_M36_HD_STREAM_DECODER_S_ :
+	cd lld/deca/m36/m36_s/stream_decoder; \
+	  ${MAKE} clean
+	  
+LLD_DECA_M36F_HD_STREAM_DECODER :
+	cd lld/deca/m36f/stream_decoder; \
+	  ${MAKE}
+
+LLD_DECA_M36F_HD_STREAM_DECODER_ :
+	cd lld/deca/m36f/stream_decoder; \
+	  ${MAKE} clean
+
+LLD_DECA_M36F_M3701E_HD_STREAM_DECODER :
+	cd lld/deca/m36f/m36f_m3701e/stream_decoder; \
+	  ${MAKE}
+
+LLD_DECA_M36F_M3701E_HD_STREAM_DECODER_ :
+	cd lld/deca/m36f/m36f_m3701e/stream_decoder; \
+	  ${MAKE} clean
+
+LLD_DECA_M36_HD_STREAM_DECODER_T :
+	cd lld/deca/m36/stream_decoder; \
+	  ${MAKE} -f makefile_t
+
+LLD_DECA_M36_HD_STREAM_DECODER_T_ :
+	cd lld/deca/m36/stream_decoder; \
+	  ${MAKE} -f makefile_t clean	  
+	  
+LLD_DECA_M36_ATSC :
+	cd lld/deca/m36_atsc; \
+	  ${MAKE}
+
+LLD_DECA_M36_ATSC_ :
+	cd lld/deca/m36_atsc; \
+	  ${MAKE} clean
+
+LLD_DECA_M33 :
+	cd lld/deca/m33; \
+	  ${MAKE}
+
+LLD_DECA_M33_ :
+	cd lld/deca/m33; \
+	  ${MAKE} clean
+
+LLD_DECA_M33_S1 :
+	cd lld/deca/m33/m33_s1; \
+	  ${MAKE}
+
+LLD_DECA_M33_S1_ :
+	cd lld/deca/m33/m33_s1; \
+	  ${MAKE} clean
+
+HLD_SND :
+	cd hld/snd; \
+	  ${MAKE}
+
+HLD_SND_ :
+	cd hld/snd; \
+	  ${MAKE} clean
+	  
+HLD_SND__ :
+	cd hld/snd; \
+	  ${MAKE} ddk_rel
+
+LLD_SND :
+	cd lld/snd; \
+	  ${MAKE}
+
+LLD_SND_ :
+	cd lld/snd; \
+	  ${MAKE} clean
+
+LLD_SND_M36 :
+	cd lld/snd/m36; \
+	  ${MAKE}
+
+LLD_SND_M36_ :
+	cd lld/snd/m36; \
+	  ${MAKE} clean
+
+LLD_SND_M31 :
+	cd lld/snd/m31; \
+	  ${MAKE}
+
+LLD_SND_M31_ :
+	cd lld/snd/m31; \
+	  ${MAKE} clean
+
+LLD_SND_M36_S :
+	cd lld/snd/m36/m36_s; \
+	  ${MAKE}
+
+LLD_SND_M36_S_ :
+	cd lld/snd/m36/m36_s; \
+	  ${MAKE} clean
+
+LLD_SND_M36_T :
+	cd lld/snd/m36/m36_t; \
+	  ${MAKE}
+
+LLD_SND_M36_T_ :
+	cd lld/snd/m36/m36_t; \
+	  ${MAKE} clean	  
+
+LLD_SND_M36_ATSC :
+	cd lld/snd/m36_atsc; \
+	  ${MAKE}
+
+LLD_SND_M36_ATSC_ :
+	cd lld/snd/m36_atsc; \
+	  ${MAKE} clean
+
+LLD_SND_M36F :
+	cd lld/snd/m36f; \
+	  ${MAKE}
+
+LLD_SND_M36F_ :
+	cd lld/snd/m36f; \
+	  ${MAKE} clean
+
+LLD_SND_M36G :
+	cd lld/snd/m36g; \
+	  ${MAKE}
+
+LLD_SND_M36G_ :
+	cd lld/snd/m36g; \
+	  ${MAKE} clean
+LLD_SND_M36F_T :
+	cd lld/snd/m36f/m36f_t; \
+	  ${MAKE}
+
+LLD_SND_M36F_T_ :
+	cd lld/snd/m36f/m36f_t; \
+	  ${MAKE} clean
+
+LLD_SND_M36F_M3701E :
+	cd lld/snd/m36f/m36f_m3701e; \
+	  ${MAKE}
+
+LLD_SND_M36F_M3701E_ :
+	cd lld/snd/m36f/m36f_m3701e; \
+	  ${MAKE} clean
+
+LLD_SND_M36F_M3701E_S :
+	cd lld/snd/m36f/m36f_m3701e/m36f_m3701e_s; \
+	  ${MAKE}
+
+LLD_SND_M36F_M3701E_S_ :
+	cd lld/snd/m36f/m36f_m3701e/m36f_m3701e_s; \
+	  ${MAKE} clean
+
+LLD_SND_M36F_3383 :
+	cd lld/snd/m36f_m3383; \
+	  ${MAKE}
+
+LLD_SND_M36F_3383_ :
+	cd lld/snd/m36f_m3383; \
+	  ${MAKE} clean
+	  
+LLD_SND_M33 :
+	cd lld/snd/m33; \
+	  ${MAKE}
+
+LLD_SND_M33_ :
+	cd lld/snd/m33; \
+	  ${MAKE} clean
+
+HLD_OSD :
+	cd hld/osd; \
+	  ${MAKE}
+
+HLD_OSD_ :
+	cd hld/osd; \
+	  ${MAKE} clean
+	  
+HLD_OSD__ :
+	cd hld/osd; \
+	  ${MAKE} ddk_rel
+
+LLD_OSD :
+	cd lld/osd; \
+	  ${MAKE}
+
+LLD_OSD_ :
+	cd lld/osd; \
+	  ${MAKE} clean
+
+HLD_CIC :
+	cd hld/cic; \
+	  ${MAKE}
+
+HLD_CIC_ :
+	cd hld/cic; \
+	  ${MAKE} clean
+
+HLD_CIC__ :
+	cd hld/cic; \
+	  ${MAKE} ddk_rel
+	  
+LLD_OSD_M36 :
+	cd lld/osd/m36; \
+	  ${MAKE}
+
+LLD_OSD_M36_ :
+	cd lld/osd/m36; \
+	  ${MAKE} clean
+
+LLD_OSD_M33F :
+	cd lld/osd/m33f; \
+	  ${MAKE}
+
+LLD_OSD_M33F_ :
+	cd lld/osd/m33f; \
+	  ${MAKE} clean
+
+LLD_OSD_M31 :
+	cd lld/osd/m31; \
+	  ${MAKE}
+
+LLD_OSD_M31_ :
+	cd lld/osd/m31; \
+	  ${MAKE} clean
+	  
+LLD_OSD_M36_ATSC :
+	cd lld/osd/m36_atsc; \
+	  ${MAKE}
+
+LLD_OSD_M36_ATSC_ :
+	cd lld/osd/m36_atsc; \
+	  ${MAKE} clean
+
+LLD_OSD_M36_HD :
+	cd lld/osd/m36/m36_hd; \
+	  ${MAKE}
+
+LLD_OSD_M36_HD_ :
+	cd lld/osd/m36/m36_hd; \
+	  ${MAKE} clean
+
+LLD_OSD_M36_HD_S2 :
+	cd lld/osd/m36/m36_hd_s2; \
+	  ${MAKE}
+
+LLD_OSD_M36_HD_S2_ :
+	cd lld/osd/m36/m36_hd_s2; \
+	  ${MAKE} clean
+
+LLD_OSD_M3C :
+	cd lld/osd/m3c; \
+	  ${MAKE}
+
+LLD_OSD_M3C_ :
+	cd lld/osd/m3c; \
+	  ${MAKE} clean
+
+LLD_OSD_M36F :
+	cd lld/osd/m36f; \
+	  ${MAKE}
+
+LLD_OSD_M36F_ :
+	cd lld/osd/m36f; \
+	  ${MAKE} clean
+
+HLD_SDEC:
+	cd hld/sdec; \
+	  ${MAKE}
+
+HLD_SDEC_:
+	cd hld/sdec; \
+	  ${MAKE} clean
+	  
+HLD_SDEC__:
+	cd hld/sdec; \
+	  ${MAKE} ddk_rel
+
+LLD_SDEC:
+	cd lld/sdec; \
+	  ${MAKE}
+
+LLD_SDEC_:
+	cd lld/sdec; \
+	  ${MAKE} clean
+
+LLD_SDEC_SW:
+	cd lld/sdec/m33; \
+	  ${MAKE}
+
+LLD_SDEC_SW_:
+	cd lld/sdec/m33; \
+	  ${MAKE} clean
+
+LLD_SDEC_SW__:
+	cd lld/sdec/m33; \
+	  ${MAKE} ddk_rel
+
+LLD_SDEC_HW_M33:
+	cd lld/sdec_hw/m33; \
+	  ${MAKE}
+
+LLD_SDEC_HW_M33_:
+	cd lld/sdec_hw/m33; \
+	  ${MAKE} clean
+	  
+HLD_RFM :
+	cd hld/rfm; \
+	  ${MAKE}
+
+HLD_RFM_ :
+	cd hld/rfm; \
+	  ${MAKE} clean
+	  
+HLD_RFM__ :
+	cd hld/rfm; \
+	  ${MAKE} ddk_rel
+
+LLD_RFM :
+	cd lld/rfm; \
+	  ${MAKE}
+
+LLD_RFM_ :
+	cd lld/rfm; \
+	  ${MAKE} clean
+
+LLD_RFM_TA1243 :
+	cd lld/rfm/ta1243; \
+	  ${MAKE}
+
+LLD_RFM_TA1243_ :
+	cd lld/rfm/ta1243; \
+	  ${MAKE} clean
+
+LLD_RFM_TA1243__ :
+	cd lld/rfm/ta1243; \
+	  ${MAKE} ddk_rel
+	  
+LLD_RFM_MCBS373 :
+	cd lld/rfm/mcbs373; \
+	  ${MAKE}
+
+LLD_RFM_MCBS373_ :
+	cd lld/rfm/mcbs373; \
+	  ${MAKE} clean
+
+LLD_RFM_MCBS373__ :
+	cd lld/rfm/mcbs373; \
+	  ${MAKE} ddk_rel
+	  
+LLD_RFM_V8060 :
+	cd lld/rfm/v8060; \
+	  ${MAKE}
+
+LLD_RFM_V8060_ :
+	cd lld/rfm/v8060; \
+	  ${MAKE} clean
+	  
+LLD_RFM_V8060__ :
+	cd lld/rfm/v8060; \
+	  ${MAKE} ddk_rel
+
+LLD_RFM_SHARP5056 :
+	cd lld/rfm/sharp5056; \
+	  ${MAKE}
+
+LLD_RFM_SHARP5056_ :
+	cd lld/rfm/sharp5056; \
+	  ${MAKE} clean
+
+LLD_RFM_SHARP5056__ :
+	cd lld/rfm/sharp5056; \
+	  ${MAKE} ddk_rel
+	  
+LLD_RFM_RMUP74055 :
+	cd lld/rfm/rmup74055; \
+	  ${MAKE}
+
+LLD_RFM_RMUP74055_ :
+	cd lld/rfm/rmup74055; \
+	  ${MAKE} clean
+	  
+LLD_RFM_RMUP74055__ :
+	cd lld/rfm/rmup74055; \
+	  ${MAKE} ddk_rel
+
+LLD_RFM_SM0268 :
+	cd lld/rfm/sm0268; \
+	  ${MAKE}
+
+LLD_RFM_SM0268_ :
+	cd lld/rfm/sm0268; \
+	  ${MAKE} clean
+
+LLD_RFM_SM0268__ :
+	cd lld/rfm/sm0268; \
+	  ${MAKE} ddk_rel
+	  
+LLD_RFM_MC44BS374T1 :
+	cd lld/rfm/mc44bs374t1; \
+	  ${MAKE}
+
+LLD_RFM_MC44BS374T1_ :
+	cd lld/rfm/mc44bs374t1; \
+	  ${MAKE} clean
+	  
+LLD_RFM_MC44BS374T1__ :
+	cd lld/rfm/mc44bs374t1; \
+	  ${MAKE} ddk_rel
+	  
+HLD_PAN :
+	cd hld/pan; \
+	  ${MAKE}
+
+HLD_PAN_ :
+	cd hld/pan; \
+	  ${MAKE} clean
+
+HLD_PAN__ :
+	cd hld/pan; \
+	  ${MAKE} ddk_rel
+
+LLD_PAN :
+	cd lld/pan; \
+	  ${MAKE}
+
+LLD_PAN_ :
+	cd lld/pan; \
+	  ${MAKE} clean
+
+LLD_IRC :
+	cd lld/pan/irc; \
+	  ${MAKE}
+
+LLD_IRC_ :
+	cd lld/pan/irc; \
+	  ${MAKE} clean
+
+LLD_IRX_M36 :
+	cd lld/pan/irx; \
+	  ${MAKE}
+
+LLD_IRX_M36_ :
+	cd lld/pan/irx; \
+	  ${MAKE} clean
+
+LLD_IRC_M63 :
+	cd lld/pan/irc/m63; \
+	  ${MAKE}
+
+LLD_IRC_M63_ :
+	cd lld/pan/irc/m63; \
+	  ${MAKE} clean
+	  
+LLD_IRC_M63__ :
+	cd lld/pan/irc/m63; \
+	  ${MAKE} ddk_rel
+
+LLD_PAN_COMMON :
+	cd lld/pan/common; \
+	  ${MAKE}
+
+LLD_PAN_COMMON_ :
+	cd lld/pan/common; \
+	  ${MAKE} clean
+
+LLD_PAN_DUAL_SHIFT :
+	cd lld/pan/dual_shift; \
+	  ${MAKE}
+
+LLD_PAN_DUAL_SHIFT_ :
+	cd lld/pan/dual_shift; \
+	  ${MAKE} clean
+
+LLD_PAN_PT6958 :
+	cd lld/pan/pt6958; \
+	  ${MAKE}
+
+LLD_PAN_PT6958_ :
+	cd lld/pan/pt6958; \
+	  ${MAKE} clean
+
+LLD_PAN_PT6964 :
+	cd lld/pan/pt6964; \
+	  ${MAKE}
+
+LLD_PAN_PT6964_ :
+	cd lld/pan/pt6964; \
+	${MAKE} clean
+
+LLD_PAN_PT6964_SKY :
+	cd lld/pan/pt6964_sky; \
+	  ${MAKE}
+
+LLD_PAN_PT6964_SKY_ :
+	cd lld/pan/pt6964_sky; \
+	${MAKE} clean
+
+LLD_PAN_COMMON__ :
+	cd lld/pan/common; \
+	  ${MAKE} ddk_rel
+	  
+LLD_PAN_HWSCAN :
+	cd lld/pan/hwscan; \
+	  ${MAKE}
+
+LLD_PAN_HWSCAN_ :
+	cd lld/pan/hwscan; \
+	  ${MAKE} clean
+	  
+LLD_PAN_HWSCAN__ :
+	cd lld/pan/hwscan; \
+	  ${MAKE} ddk_rel	  
+
+LLD_PAN_CH455 :
+	cd lld/pan/ch455; \
+	  ${MAKE}
+
+LLD_PAN_CH455_ :
+	cd lld/pan/ch455; \
+	  ${MAKE} clean
+	  
+LLD_PAN_CH455__ :
+	cd lld/pan/ch455; \
+	  ${MAKE} ddk_rel	  
+
+LLD_PAN_AT89 :
+	cd lld/pan/at89; \
+	  ${MAKE}
+
+LLD_PAN_AT89_ :
+	cd lld/pan/at89; \
+	  ${MAKE} clean
+	  
+LLD_PAN_AT89__ :
+	cd lld/pan/at89; \
+	  ${MAKE} ddk_rel	  
+
+LLD_PAN_NEC_16312 :
+	cd lld/pan/nec16312; \
+	  ${MAKE}
+
+LLD_PAN_NEC_16312_ :
+	cd lld/pan/nec16312; \
+	  ${MAKE} clean
+	  
+LLD_PAN_NEC_16312__ :
+	cd lld/pan/nec16312; \
+	  ${MAKE} ddk_rel
+
+LLD_PAN_CT1642 :
+	cd lld/pan/ct1642; \
+	  ${MAKE}
+
+LLD_PAN_CT1642_ :
+	cd lld/pan/ct1642; \
+	  ${MAKE} clean
+	  
+LLD_PAN_CT1642__ :
+	cd lld/pan/ct1642; \
+	  ${MAKE} ddk_rel	
+	  
+LLD_PAN_CT1642_GY :
+	cd lld/pan/ct1642_gy; \
+	  ${MAKE}
+
+LLD_PAN_CT1642_GY_ :
+	cd lld/pan/ct1642_gy; \
+	  ${MAKE} clean
+	  
+LLD_PAN_CT1642_GY__ :
+	cd lld/pan/ct1642_gy; \
+	  ${MAKE} ddk_rel
+	  	  
+LLD_PAN_DIRECT_GPIO :
+	cd lld/pan/direct_gpio; \
+	  ${MAKE}
+
+LLD_PAN_DIRECT_GPIO_ :
+	cd lld/pan/direct_gpio; \
+	  ${MAKE} clean
+	  
+LLD_PAN_DIRECT_GPIO__ :
+	cd lld/pan/direct_gpio; \
+	  ${MAKE} ddk_rel	  
+
+LLD_PAN_SMT_M51 :
+	cd lld/pan/smt_m51; \
+	  ${MAKE}
+
+LLD_PAN_SMT_M51_ :
+	cd lld/pan/smt_m51; \
+	  ${MAKE} clean
+	  
+LLD_PAN_PT6958_IR00 :
+	cd lld/pan/pt6958_ir00; \
+	  ${MAKE}
+
+LLD_PAN_PT6958_IR00_ :
+	cd lld/pan/pt6958_ir00; \
+	  ${MAKE} clean	  
+ 
+LLD_PAN_PT6958_IR00__ :
+	cd lld/pan/pt6958_ir00; \
+	  ${MAKE} ddk_rel
+
+LLD_PAN_SM1668 :
+	cd lld/pan/sm1668; \
+	  ${MAKE}
+
+LLD_PAN_SM1668_ :
+	cd lld/pan/sm1668; \
+	  ${MAKE} clean	  
+ 
+LLD_PAN_SM1668__ :
+	cd lld/pan/sm1668; \
+	  ${MAKE} ddk_rel
+
+LLD_PAN_ET6202 :
+	cd lld/pan/et6202; \
+	  ${MAKE}
+
+LLD_PAN_ET6202_ :
+	cd lld/pan/et6202; \
+	  ${MAKE} clean
+	  
+LLD_PAN_ET6202__ :
+	cd lld/pan/et6202; \
+	  ${MAKE} ddk_rel
+
+LLD_PAN_ET6202_B00 :
+	cd lld/pan/et6202_b00; \
+	  ${MAKE}
+
+LLD_PAN_ET6202_B00_ :
+	cd lld/pan/et6202_b00; \
+	  ${MAKE} clean
+	  
+LLD_PAN_ET6202_B00__ :
+	cd lld/pan/et6202_b00; \
+	  ${MAKE} ddk_rel
+
+LLD_PAN_FD650:
+	cd lld/pan/fd650_gp; \
+	  ${MAKE}
+
+LLD_PAN_FD650_:
+	cd lld/pan/fd650_gp; \
+	  ${MAKE} clean
+	  
+LLD_PAN_FD650__:
+	cd lld/pan/fd650_gp; \
+	  ${MAKE} ddk_rel
+
+	
+HLD_SCART:
+	cd hld/scart; \
+	  ${MAKE}
+
+HLD_SCART_:
+	cd hld/scart; \
+	  ${MAKE} clean
+
+HLD_SCART__:
+	cd hld/scart; \
+	  ${MAKE} ddk_rel
+
+
+LLD_SCART_AK4707 :
+	cd lld/scart/ak4707; \
+	  ${MAKE}
+
+LLD_SCART_AK4707_ :
+	cd lld/scart/ak4707; \
+	  ${MAKE} clean
+
+LLD_SCART_AK4707__ :
+	cd lld/scart/ak4707; \
+	  ${MAKE} ddk_rel
+
+LLD_SCART_MX9671 :
+	cd lld/scart/mx9671; \
+	  ${MAKE}
+
+LLD_SCART_MX9671_ :
+	cd lld/scart/mx9671; \
+	  ${MAKE} clean
+
+LLD_SCART_MX9671__ :
+	cd lld/scart/mx9671; \
+	  ${MAKE} ddk_rel
+
+
+LLD_SCART_ST6418 :
+	cd lld/scart/st6418; \
+	  ${MAKE}
+
+LLD_SCART_ST6418_ :
+	cd lld/scart/st6418; \
+	  ${MAKE} clean
+
+LLD_SCART_ST6418__ :
+	cd lld/scart/st6418; \
+	  ${MAKE} ddk_rel
+
+LLD_SCART_ST6419 :
+	cd lld/scart/st6419; \
+	  ${MAKE}
+
+LLD_SCART_ST6419_ :
+	cd lld/scart/st6419; \
+	  ${MAKE} clean
+
+LLD_SCART_ST6419__ :
+	cd lld/scart/st6419; \
+	  ${MAKE} ddk_rel
+
+HLD_SMC:
+	cd hld/smc; \
+	  ${MAKE}
+
+HLD_SMC_:
+	cd hld/smc; \
+	  ${MAKE} clean
+
+HLD_SMC__ :
+	cd hld/smc; \
+	  ${MAKE} ddk_rel
+
+LLD_SMC :
+	cd lld/smc/smartcard; \
+	  ${MAKE}
+
+LLD_SMC_ :
+	cd lld/smc/smartcard; \
+	  ${MAKE} clean
+
+LLD_SMC__ :
+	cd lld/smc/smartcard; \
+	  ${MAKE} ddk_rel
+	  
+LLD_SMC_UART :
+	cd lld/smc/uart; \
+	  ${MAKE}
+
+LLD_SMC_UART_ :
+	cd lld/smc/uart; \
+	  ${MAKE} clean
+
+LLD_SMC_UART__ :
+	cd lld/smc/uart; \
+	  ${MAKE} ddk_rel
+
+LLD_SMARTCARD :
+	cd lld/smc/smartcard; \
+	  ${MAKE}
+
+LLD_SMARTCARD_ :
+	cd lld/smc/smartcard; \
+	  ${MAKE} clean
+
+LLD_SMARTCARD__ :
+	cd lld/smc/smartcard; \
+	  ${MAKE} ddk_rel
+
+HLD_WIFI :
+	cd hld/wifi; \
+	  ${MAKE}
+
+HLD_WIFI_ :
+	cd hld/wifi; \
+	  ${MAKE} clean
+
+HLD_WIFI__ :
+	cd hld/wifi; \
+	  ${MAKE} ddk_rel
+HLD_NET :
+	cd hld/net; \
+	  ${MAKE}
+
+HLD_NET_ :
+	cd hld/net; \
+	  ${MAKE} clean
+
+HLD_NET__ :
+	cd hld/net; \
+	  ${MAKE} ddk_rel
+
+LLD_NET :
+	cd lld/net; \
+	  ${MAKE}
+
+LLD_NET_ :
+	cd lld/net; \
+	  ${MAKE} clean
+
+LLD_NET__ :
+	cd lld/net; \
+	  ${MAKE} ddk_rel
+
+LLD_NET_RTL8139 :
+	cd lld/net/rtl8139; \
+	  ${MAKE}
+	  
+LLD_NET_RTL8139_ :
+	cd lld/net/rtl8139; \
+	  ${MAKE} clean
+
+LLD_NET_RTL8139__ :
+	cd lld/net/rtl8139; \
+	  ${MAKE} ddk_rel
+
+LLD_NET_DM9KA :
+	cd lld/net/dm9ka; \
+	  ${MAKE}
+
+LLD_NET_DM9KA_ :
+	cd lld/net/dm9ka; \
+	  ${MAKE} clean
+
+LLD_NET_DM9KA__ :
+	cd lld/net/dm9ka; \
+	  ${MAKE} ddk_rel
+
+LLD_NET_W5300 :
+	cd lld/net/w5300; \
+	  ${MAKE}
+
+LLD_NET_W5300_ :
+	cd lld/net/w5300; \
+	  ${MAKE} clean
+
+LLD_NET_ENC28J60 :
+	cd lld/net/enc28j60; \
+	  ${MAKE}
+
+LLD_NET_ENC28J60_ :
+	cd lld/net/enc28j60; \
+	  ${MAKE} clean
+
+LLD_NET_ENC28J60__ :
+	cd lld/net/enc28j60; \
+	  ${MAKE} ddk_rel
+
+LLD_NET_AX88796B :
+	cd lld/net/ax88796b; \
+	  ${MAKE}
+
+LLD_NET_AX88796B_ :
+	cd lld/net/ax88796b; \
+	  ${MAKE} clean
+
+LLD_NET_AX88796B__ :
+	cd lld/net/ax88796b; \
+	  ${MAKE} ddk_rel
+
+LLD_NET_SMSC9220 :
+	cd lld/net/smsc9220; \
+	  ${MAKE}
+
+LLD_NET_SMSC9220_ :
+	cd lld/net/smsc9220; \
+	  ${MAKE} clean
+
+LLD_NET_SMSC9220__ :
+	cd lld/net/smsc9220; \
+	  ${MAKE} ddk_rel
+
+LLD_NET_ETHERNETMAC :
+	cd lld/net/ethernetmac; \
+	  ${MAKE}
+
+LLD_NET_ETHERNETMAC_ :
+	cd lld/net/ethernetmac; \
+	  ${MAKE} clean
+
+LLD_NET_ETHTOE2 :
+	cd lld/net/eth_toe2; \
+	  ${MAKE}
+
+LLD_NET_ETHTOE2_ :
+	cd lld/net/eth_toe2; \
+	  ${MAKE} clean
+
+LLD_NET_ETHTOE2__ :
+	cd lld/net/eth_toe2; \
+	  ${MAKE} ddk_rel
+	  
+LLD_ISDBTCC:
+	cd lld/isdbtcc; \
+	  ${MAKE}
+
+LLD_ISDBTCC_:
+	cd lld/isdbtcc; \
+	  ${MAKE} clean
+
+LLD_ISDBTCC__:
+	cd lld/isdbtcc; \
+	  ${MAKE} ddk_rel
+	  
+UDI_PTHREAD :
+	cd udi/pthread; \
+	  ${MAKE}
+
+UDI_PTHREAD_ :
+	cd udi/pthread; \
+	  ${MAKE} clean
+
+UDI_PTHREAD__ :
+	cd udi/pthread; \
+	  ${MAKE} ddk_rel	  
+	  
+LIB_DLNAPROGRESS :
+	cd lib/libapplet/libdlnapeer/ctrl;\
+		${MAKE}
+LIB_DLNAPROGRESS_ :
+	cd lib/libapplet/libdlnapeer/ctrl;\
+		${MAKE} clean
+
+LIB_DLNAPEER :
+	cd lib/libapplet/libdlnapeer;\
+		${MAKE}
+LIB_DLNAPEER_ :
+	cd lib/libapplet/libdlnapeer;\
+		${MAKE} clean
+
+LIB_DLNAPEER__ :
+	cd lib/libapplet/libdlnapeer;\
+		${MAKE} ddk_rel
+
+LIB_SATIP_SERVER :
+	cd lib/libapplet/libsat2ip/libserver; \
+	  ${MAKE}
+
+LIB_SATIP_SERVER_ :
+	cd lib/libapplet/libsat2ip/libserver; \
+	  ${MAKE} clean
+
+LIB_SATIP_SERVER__ :
+	cd lib/libapplet/libsat2ip/libserver; \
+	  ${MAKE} ddk_rel
+
+LIB_MEDIA_PROVIDER :
+	cd lib/libapplet/libsat2ip/provider; \
+	  ${MAKE}
+
+LIB_MEDIA_PROVIDER_ :
+	cd lib/libapplet/libsat2ip/provider; \
+	  ${MAKE} clean
+
+LIB_MEDIA_PROVIDER__ :
+	cd lib/libapplet/libsat2ip/provider; \
+	  ${MAKE} ddk_rel
+
+
+LIB_UPNP :
+	cd lib/libapplet/libupnp; \
+	  ${MAKE}
+
+LIB_UPNP_ :
+	cd lib/libapplet/libupnp; \
+	  ${MAKE} clean
+
+LIB_UPNP__ :
+	
+	  
+LIB_HTTP_MG_SERVER :
+	cd lib/libcommunicate/libtcpip/mongoose; \
+	  ${MAKE}
+LIB_HTTP_MG_SERVER_ :
+	cd lib/libcommunicate/libtcpip/mongoose; \
+	  ${MAKE} clean
+LIB_HTTP_MG_SERVER__ :
+	cd lib/libcommunicate/libtcpip/mongoose; \
+	  ${MAKE} ddk_rel
+
+LIB_LWIP :
+	cd lib/libcommunicate/libtcpip/lwip; \
+	  ${MAKE}
+
+LIB_LWIP_ :
+	cd lib/libcommunicate/libtcpip/lwip; \
+	  ${MAKE} clean
+
+LIB_LWIP140 :
+	cd lib/libcommunicate/libtcpip/lwip140; \
+	  ${MAKE}
+
+LIB_LWIP140_ :
+	cd lib/libcommunicate/libtcpip/lwip140; \
+	  ${MAKE} clean
+LIB_LWIP140__ :
+	cd lib/libcommunicate/libtcpip/lwip140; \
+	  ${MAKE} ddk_rel
+
+LIB_CURL :
+	cd lib/libcommunicate/libtcpip/libcurl; \
+	  ${MAKE}
+
+LIB_CURL_ :
+	cd lib/libcommunicate/libtcpip/libcurl; \
+	  ${MAKE} clean
+
+LIB_CURL__ :
+	cd lib/libcommunicate/libtcpip/libcurl; \
+	  ${MAKE} ddk_rel
+	  
+LIB_CURL_S :
+	cd lib/libcommunicate/libtcpip/libcurl/libcurl_s; \
+	  ${MAKE}
+
+LIB_CURL_S_ :
+	cd lib/libcommunicate/libtcpip/libcurl/libcurl_s; \
+	  ${MAKE} clean
+
+LIB_CURL_S__ :
+	cd lib/libcommunicate/libtcpip/libcurl/libcurl_s; \
+	  ${MAKE} ddk_rel
+LIB_LIVE555 :
+	cd lib/libcommunicate/libtcpip/live555; \
+	  ${MAKE}
+LIB_LIVE555_ :
+	cd lib/libcommunicate/libtcpip/live555; \
+	  ${MAKE} clean
+
+LIB_LIVE555__:
+	cd lib/libcommunicate/libtcpip/live555; \
+	  ${MAKE} ddk_rel
+
+LIB_VPN :
+	cd lib/libcommunicate/libtcpip/libvpn; \
+	  ${MAKE}
+
+LIB_VPN_ :
+	cd lib/libcommunicate/libtcpip/libvpn; \
+	  ${MAKE} clean
+
+LIB_VPN__ :
+	cd lib/libcommunicate/libtcpip/libvpn; \
+	  ${MAKE} ddk_rel
+
+LIB_NET :
+	cd lib/libcommunicate/libtcpip/libnet; \
+	  ${MAKE}
+
+LIB_NET_ :
+	cd lib/libcommunicate/libtcpip/libnet; \
+	  ${MAKE} clean
+
+LIB_NET__ :
+	cd lib/libcommunicate/libtcpip/libnet; \
+	  ${MAKE} ddk_rel
+
+LIB_NIC :
+	cd lib/libcommunicate/libtcpip/libnic;\
+	 ${MAKE}
+
+LIB_NIC_:
+	cd lib/libcommunicate/libtcpip/libnic;\
+	 ${MAKE} clean
+
+LIB_NIC__:
+	cd lib/libcommunicate/libtcpip/libnic;\
+	  ${MAKE} ddk_rel
+
+LIB_NETUPG :
+	cd lib/libapplet/libnetupg/;  \
+	  ${MAKE}
+
+LIB_NETUPG_ :
+	cd lib/libapplet/libnetupg/;  \
+	  ${MAKE} clean
+
+LIB_NETUPG__ :
+	cd lib/libapplet/libnetupg/;  \
+	  ${MAKE} ddk_rel
+
+LIB_NETCTL :
+	cd lib/libapplet/libnetctl/;	\
+		${MAKE}
+		
+LIB_NETCTL_ :
+	cd lib/libapplet/libnetctl/;	\
+		${MAKE} clean
+		
+LIB_NETCTL__ :
+	cd lib/libapplet/libnetctl/;	\
+		${MAKE} ddk_rel		 
+
+LIB_NETCTL_PLUGIN :
+	cd lib/libapplet/libnetctl/netctl;	\
+		${MAKE}
+		
+LIB_NETCTL_PLUGIN_ :
+	cd lib/libapplet/libnetctl/netctl;	\
+		${MAKE} clean
+		
+LIB_NETCTL_PLUGIN__ :
+	cd lib/libapplet/libnetctl/netctl;	\
+		${MAKE} ddk_rel		 
+
+LIB_PUB :
+	cd lib/libapplet/libpub/;  \
+	  ${MAKE}
+	  
+LIB_PUB_ :
+	cd lib/libapplet/libpub/;  \
+	  ${MAKE} clean
+	  
+LIB_PUB__ :
+	cd lib/libapplet/libpub/;  \
+	  ${MAKE} ddk_rel
+
+LIB_PUB29 :
+	cd lib/libapplet/libpub29/;  \
+	  ${MAKE}
+
+LIB_PUB29_ :
+	cd lib/libapplet/libpub29/; \
+	  ${MAKE} clean
+
+LIB_PUB29__ :
+	cd lib/libapplet/libpub29/; \
+	  ${MAKE} ddk_rel
+
+LIB_PUB29_AS :
+	cd lib/libapplet/libpub29/as/;  \
+	  ${MAKE}
+
+LIB_PUB29_AS_ :
+	cd lib/libapplet/libpub29/as/; \
+	  ${MAKE} clean
+
+LIB_PUB29_AS__ :
+	cd lib/libapplet/libpub29/as/; \
+	  ${MAKE} ddk_rel
+
+LIB_PUB27_ATSC :
+	cd lib/libapplet/libpub27; \
+	  ${MAKE} -f Makefile_atsc
+
+LIB_PUB27_ATSC_ :
+	cd lib/libapplet/libpub27; \
+	  ${MAKE} -f Makefile_atsc clean
+
+LIB_PUB27_ATSC__ :
+	cd lib/libapplet/libpub27; \
+	  ${MAKE} -f Makefile_atsc ddk_rel
+
+LIB_PUB27_ALL :
+	cd lib/libapplet/libpub27/pub; \
+	  ${MAKE} -f Makefile_atsc
+
+LIB_PUB27_ALL_ :
+	cd lib/libapplet/libpub27/pub; \
+	  ${MAKE} -f Makefile_atsc clean
+	  
+LIB_PUB27_ALL__ :
+	cd lib/libapplet/libpub27/pub; \
+	  ${MAKE} -f Makefile_atsc ddk_rel
+
+LIB_PUB27_AS :
+	cd lib/libapplet/libpub27/as; \
+	  ${MAKE} -f Makefile_atsc
+
+LIB_PUB27_AS_ :
+	cd lib/libapplet/libpub27/as; \
+	  ${MAKE} -f Makefile_atsc clean
+
+LIB_PUB27_AS__ :
+	cd lib/libapplet/libpub27/as; \
+	  ${MAKE} -f Makefile_atsc ddk_rel
+
+LIB_PUB27_T :
+	cd lib/libapplet/libpub27; \
+	  ${MAKE} -f Makefile_t
+
+LIB_PUB27_T_ :
+	cd lib/libapplet/libpub27; \
+	  ${MAKE} -f Makefile_t clean
+	  
+LIB_PUB27_T__ :
+	cd lib/libapplet/libpub27; \
+	  ${MAKE} -f Makefile_t ddk_rel
+	  	  
+LIB_MCAS :
+	cd lib/libmcas; \
+	  ${MAKE}
+
+LIB_MCAS_ :
+	cd lib/libmcas; \
+	  ${MAKE} clean
+	  
+LIB_MCAS__ :
+	cd lib/libmcas; \
+	  ${MAKE} ddk_rel
+	  	  
+LIB_PSIP :
+	cd lib/libdvb/libsi/libpsip; \
+	  ${MAKE}
+
+LIB_PSIP_ :
+	cd lib/libdvb/libsi/libpsip; \
+	  ${MAKE} clean
+
+LIB_PSIP__ :
+	cd lib/libdvb/libsi/libpsip; \
+	  ${MAKE} ddk_rel
+
+LIB_PUB29_ATSC :
+	cd lib/libapplet/libpub29;  \
+	  ${MAKE} -f Makefile_atsc
+
+LIB_PUB29_ATSC_ :
+	cd lib/libapplet/libpub29; \
+	  ${MAKE} -f Makefile_atsc clean
+
+LIB_PUB29_ATSC__ :
+	cd lib/libapplet/libpub29; \
+	  ${MAKE} -f Makefile_atsc ddk_rel
+
+LIB_PUB29_T :
+	cd lib/libapplet/libpub29;  \
+	  ${MAKE} -f Makefile_t
+
+LIB_PUB29_T_ :
+	cd lib/libapplet/libpub29; \
+	  ${MAKE} -f Makefile_t clean
+
+LIB_PUB29_T__ :
+	cd lib/libapplet/libpub29/; \
+	  ${MAKE} -f Makefile_t ddk_rel
+
+LIB_PUB29_T_S :
+	cd lib/libapplet/libpub29;  \
+	  ${MAKE} -f Makefile_t_s
+
+LIB_PUB29_T_S_ :
+	cd lib/libapplet/libpub29; \
+	  ${MAKE} -f Makefile_t_s clean
+
+LIB_PUB29_T_S__ :
+	cd lib/libapplet/libpub29/; \
+	  ${MAKE} -f Makefile_t_s ddk_rel
+	
+LIB_PUB29_ISDBT :
+	cd lib/libapplet/libpub29;  \
+	  ${MAKE} -f Makefile_isdbt
+
+LIB_PUB29_ISDBT_ :
+	cd lib/libapplet/libpub29; \
+	  ${MAKE} -f Makefile_isdbt clean
+
+LIB_PUB29_ISDBT__ :
+	cd lib/libapplet/libpub29/; \
+	  ${MAKE} -f Makefile_isdbt ddk_rel
+
+LIB_PUB29_ISDBT_S :
+	cd lib/libapplet/libpub29;  \
+	  ${MAKE} -f Makefile_isdbt_s
+
+LIB_PUB29_ISDBT_S_ :
+	cd lib/libapplet/libpub29; \
+	  ${MAKE} -f Makefile_isdbt_s clean
+
+LIB_PUB29_ISDBT_S__ :
+	cd lib/libapplet/libpub29/; \
+	  ${MAKE} -f Makefile_isdbt_s ddk_rel
+
+LIB_PUB29_S :
+	cd lib/libapplet/libpub29;  \
+	  ${MAKE} -f Makefile_s
+
+LIB_PUB29_S_ :
+	cd lib/libapplet/libpub29; \
+	  ${MAKE} -f Makefile_s clean
+
+LIB_PUB29_S__ :
+	cd lib/libapplet/libpub29/; \
+	  ${MAKE} -f Makefile_s ddk_rel
+
+
+LIB_BOOTUPG:
+	cd lib/libapplet/libbootupg; \
+	  ${MAKE}
+
+LIB_BOOTUPG_ :
+	cd lib/libapplet/libbootupg; \
+	  ${MAKE} clean
+
+LIB_BOOTUPG__ :
+	cd lib/libapplet/libbootupg; \
+	  ${MAKE} ddk_rel
+	
+LIB_BOOTUPG3:
+	cd lib/libapplet/libbootupg3; \
+	  ${MAKE}
+
+LIB_BOOTUPG3_ :
+	cd lib/libapplet/libbootupg3; \
+	  ${MAKE} clean
+
+LIB_BOOTUPG3__ :
+	cd lib/libapplet/libbootupg3; \
+	  ${MAKE} ddk_rel  
+	  
+LIB_UPG :
+	cd lib/libapplet/libupg; \
+	  ${MAKE}
+
+LIB_UPG_ :
+	cd lib/libapplet/libupg; \
+	  ${MAKE} clean
+
+LIB_UPG__ :
+	cd lib/libapplet/libupg; \
+	  ${MAKE} ddk_rel
+
+LIB_UPG3 :
+	cd lib/libapplet/libupg3; \
+	  ${MAKE}
+
+LIB_UPG3_ :
+	cd lib/libapplet/libupg3; \
+	  ${MAKE} clean
+
+LIB_UPG3__ :
+	cd lib/libapplet/libupg3; \
+	  ${MAKE} ddk_rel
+	  
+LIB_USBUPG :
+	cd lib/libapplet/libusbupg; \
+	  ${MAKE}
+
+LIB_USBUPG_ :
+	cd lib/libapplet/libusbupg; \
+	  ${MAKE} clean
+
+LIB_USBUPG__ :
+	cd lib/libapplet/libusbupg; \
+	  ${MAKE} ddk_rel
+
+LIB_USBUPG_S :
+	cd lib/libapplet/libusbupg/libusbupg_s; \
+	  ${MAKE}
+
+LIB_USBUPG_S_ :
+	cd lib/libapplet/libusbupg/libusbupg_s; \
+	  ${MAKE} clean
+
+LIB_USBUPG_S__ :
+	cd lib/libapplet/libusbupg/libusbupg_s; \
+	  ${MAKE} ddk_rel
+	  
+LIB_UPG_E :
+	cd lib/libapplet/libupge; \
+	  ${MAKE}
+
+LIB_UPG_E_ :
+	cd lib/libapplet/libupge; \
+	  ${MAKE} clean
+	  
+LIB_UPG_E__ :
+	cd lib/libapplet/libupge; \
+	  ${MAKE} ddk_rel
+	  
+LIB_CEC :
+	cd lib/libapplet/libcec; \
+	  ${MAKE}
+	  
+LIB_CEC_ :
+	cd lib/libapplet/libcec; \
+	  ${MAKE} clean
+	  
+LIB_CEC__ :
+	cd lib/libapplet/libcec; \
+	  ${MAKE} ddk_rel
+
+LIB_WIFI :
+	cd lib/libapplet/libwifi; \
+	  ${MAKE}
+	  
+LIB_WIFI_ :
+	cd lib/libapplet/libwifi; \
+	  ${MAKE} clean
+	  
+LIB_WIFI__ :
+	cd lib/libapplet/libwifi; \
+	  ${MAKE} ddk_rel
+
+LIB_USB3G :
+	cd lib/libapplet/libusb3g; \
+	  ${MAKE}
+	  
+LIB_USB3G_ :
+	cd lib/libapplet/libusb3g; \
+	  ${MAKE} clean
+	  
+LIB_USB3G__ :
+	cd lib/libapplet/libusb3g; \
+	  ${MAKE} ddk_rel
+	  
+LIB_HILINK :
+	cd lib/libapplet/libhilink; \
+	  ${MAKE}
+	  
+LIB_HILINK_ :
+	cd lib/libapplet/libhilink; \
+	  ${MAKE} clean
+	  
+LIB_HILINK__ :
+	cd lib/libapplet/libhilink; \
+	  ${MAKE} ddk_rel
+	  
+LIB_C :
+	cd lib/libcommon/libc; \
+	  ${MAKE}
+
+LIB_C_ :
+	cd lib/libcommon/libc; \
+	  ${MAKE} clean
+	  
+LIB_C__ :
+	cd lib/libcommon/libc; \
+	  ${MAKE} ddk_rel
+
+LIB_GNUZIP :
+	cd lib/libcommon/libzip/gnuzip; \
+	  ${MAKE}
+
+LIB_GNUZIP_ :
+	cd lib/libcommon/libzip/gnuzip; \
+	  ${MAKE} clean
+
+LIB_GNUZIP__ :
+	cd lib/libcommon/libzip/gnuzip; \
+	  ${MAKE} ddk_rel
+
+LIB_LZMA :
+	cd lib/libcommon/libzip/lzma; \
+	  ${MAKE}
+
+LIB_LZMA_ :
+	cd lib/libcommon/libzip/lzma; \
+	  ${MAKE} clean
+	  
+LIB_LZMA__ :
+	cd lib/libcommon/libzip/lzma; \
+	  ${MAKE} ddk_rel
+
+LIB_LIB7ZIP :
+	cd lib/libcommon/libzip/lib7zip; \
+	  ${MAKE}
+
+LIB_LIB7ZIP_ :
+	cd lib/libcommon/libzip/lib7zip; \
+	  ${MAKE} clean
+	  
+LIB_LIB7ZIP__ :
+	cd lib/libcommon/libzip/lib7zip; \
+	  ${MAKE} ddk_rel
+
+LIB_UN7ZIP :
+	cd lib/libcommon/libzip/un7zip; \
+	  ${MAKE}
+
+LIB_UN7ZIP_ :
+	cd lib/libcommon/libzip/un7zip; \
+	  ${MAKE} clean
+
+LIB_UN7ZIP__ :
+	cd lib/libcommon/libzip/un7zip; \
+	  ${MAKE} ddk_rel
+
+LIB_UNLZO :
+	cd lib/libcommon/libzip/unlzo; \
+	  ${MAKE}
+
+LIB_UNLZO_ :
+	cd lib/libcommon/libzip/unlzo; \
+	  ${MAKE} clean
+	  
+LIB_UNLZO__ :
+	cd lib/libcommon/libzip/unlzo; \
+	  ${MAKE} ddk_rel
+
+LIB_CHAR :
+	cd lib/libcommon/libchar; \
+	  ${MAKE}
+
+LIB_CHAR_ :
+	cd lib/libcommon/libchar; \
+	  ${MAKE} clean
+	  
+LIB_CHAR__ :
+	cd lib/libcommon/libchar; \
+	  ${MAKE} ddk_rel
+
+	  
+LIB_NIM :
+	cd lib/libcommunicate/libnim; \
+	  ${MAKE}
+
+LIB_NIM_ :
+	cd lib/libcommunicate/libnim; \
+	  ${MAKE} clean
+
+LIB_NIM__ :
+	cd lib/libcommunicate/libnim; \
+	  ${MAKE} ddk_rel
+	  
+LIB_DISEQC :
+	cd lib/libcommunicate/libdiseqc; \
+	  ${MAKE}
+
+LIB_DISEQC_ :
+	cd lib/libcommunicate/libdiseqc; \
+	  ${MAKE} clean
+
+LIB_DISEQC__ :
+	cd lib/libcommunicate/libdiseqc; \
+	  ${MAKE} ddk_rel
+	  
+LIB_DISEQC_EXT :
+	cd lib/libcommunicate/libdiseqc/libdiseqc_ext; \
+	  ${MAKE}
+
+LIB_DISEQC_EXT_ :
+	cd lib/libcommunicate/libdiseqc/libdiseqc_ext; \
+	  ${MAKE} clean
+
+LIB_CIPLUS :
+	cd lib/libdvb/libci/ciplus; \
+	  ${MAKE}
+
+LIB_CIPLUS_ :
+	cd lib/libdvb/libci/ciplus; \
+	  ${MAKE} clean
+	  
+LIB_CIPLUS__ :
+	cd lib/libdvb/libci/ciplus; \
+	  ${MAKE} ddk_rel
+	  
+LIB_CIPLUS_S :
+	cd lib/libdvb/libci/ciplus/ciplus_s; \
+	  ${MAKE}
+
+LIB_CIPLUS_S_ :
+	cd lib/libdvb/libci/ciplus/ciplus_s; \
+	  ${MAKE} clean
+	  
+LIB_CIPLUS_S__ :
+	cd lib/libdvb/libci/ciplus/ciplus_s; \
+	  ${MAKE} ddk_rel
+	  
+LIB_CIPLUS_S2 :
+	cd lib/libdvb/libci/ciplus/ciplus_s2; \
+	  ${MAKE}
+
+LIB_CIPLUS_S2_ :
+	cd lib/libdvb/libci/ciplus/ciplus_s2; \
+	  ${MAKE} clean
+	  
+LIB_CIPLUS_S2__ :
+	cd lib/libdvb/libci/ciplus/ciplus_s2; \
+	  ${MAKE} ddk_rel
+	  
+LIB_CIPLUS_CC_S :
+	cd lib/libdvb/libci/ciplus/ciplus_s2/ciplus_cc; \
+	  ${MAKE}
+
+LIB_CIPLUS_CC_S_ :
+	cd lib/libdvb/libci/ciplus/ciplus_s2/ciplus_cc; \
+	  ${MAKE} clean
+	  
+LIB_CIPLUS_CC_S__ :
+	cd lib/libdvb/libci/ciplus/ciplus_s2/ciplus_cc; \
+	  ${MAKE} ddk_rel
+
+LIB_CIPLUS_CC :
+	cd lib/libdvb/libci/ciplus/ciplus_cc; \
+	  ${MAKE}
+
+LIB_CIPLUS_CC_ :
+	cd lib/libdvb/libci/ciplus/ciplus_cc; \
+	  ${MAKE} clean
+	  
+LIB_CIPLUS_CC__ :
+	cd lib/libdvb/libci/ciplus/ciplus_cc; \
+	  ${MAKE} ddk_rel
+	  
+LIB_RSA :
+	cd lib/librsa; \
+		${MAKE}
+		
+LIB_RSA_ :
+	cd lib/librsa; \
+		${MAKE} clean
+		
+LIB_RSA__ :
+	cd lib/librsa; \
+		${MAKE} ddk_rel
+		
+LIB_RSA_SEE :
+	cd lib/librsa; \
+		${MAKE} see_all
+		
+LIB_RSA_SEE_ :
+	cd lib/librsa; \
+		${MAKE} clean
+		
+LIB_RSA_SEE__ :
+	cd lib/librsa; \
+		${MAKE} ddk_rel		
+	  
+LIB_DBC :
+	cd lib/libdvb/libdbc; \
+	  ${MAKE}
+
+LIB_DBC_ :
+	cd lib/libdvb/libdbc; \
+	  ${MAKE} clean
+	  
+LIB_DBC__ :
+	cd lib/libdvb/libdbc; \
+	  ${MAKE} ddk_rel
+
+LIB_OTA :
+	cd lib/libdvb/libota; \
+	  ${MAKE}
+
+LIB_OTA_ :
+	cd lib/libdvb/libota; \
+	  ${MAKE} clean
+	  
+LIB_OTA__ :
+	cd lib/libdvb/libota; \
+	  ${MAKE} ddk_rel	  
+
+LIB_OTA_C :
+	cd lib/libdvb/libota_c; \
+	  ${MAKE}
+
+LIB_OTA_C_ :
+	cd lib/libdvb/libota_c; \
+	  ${MAKE} clean
+	  
+LIB_OTA_C__ :
+	cd lib/libdvb/libota_c; \
+	  ${MAKE} ddk_rel	
+	  
+LIB_OTA_DVBC :
+	cd lib/libdvb/libota_dvbc; \
+	  ${MAKE}
+
+LIB_OTA_DVBC_ :
+	cd lib/libdvb/libota_dvbc; \
+	  ${MAKE} clean 
+	   
+LIB_OTA_DVBC__ :
+	cd lib/libdvb/libota_dvbc; \
+	  ${MAKE} ddk_rel 
+	   
+LIB_OTA_ATSC :
+	cd lib/libdvb/libota_atsc; \
+	  ${MAKE}
+
+LIB_OTA_ATSC_ :
+	cd lib/libdvb/libota_atsc; \
+	  ${MAKE} clean
+	  
+LIB_OTA_ATSC__ :
+	cd lib/libdvb/libota_atsc; \
+	  ${MAKE} ddk_rel	  
+
+LIB_XML2 :
+	cd lib/libdvb/libxml2; \
+	  ${MAKE}
+
+LIB_XML2_ :
+	cd lib/libdvb/libxml2; \
+	  ${MAKE} clean
+
+LIB_XML2__ :
+	cd lib/libdvb/libxml2; \
+	  ${MAKE} ddk_rel
+
+LIB_XML :
+	cd lib/libdvb/libxml; \
+	  ${MAKE}
+
+LIB_XML_ :
+	cd lib/libdvb/libxml; \
+	  ${MAKE} clean
+	  
+LIB_XML__ :
+	cd lib/libdvb/libxml; \
+	  ${MAKE} ddk_rel
+
+LIB_XML_BROWSER :
+	cd lib/libdvb/libxml/xml_browser; \
+	  ${MAKE}
+
+LIB_XML_BROWSER_ :
+	cd lib/libdvb/libxml/xml_browser; \
+	  ${MAKE} clean
+	  
+LIB_XML_BROWSER__ :
+	cd lib/libdvb/libxml/xml_browser; \
+	  ${MAKE} ddk_rel
+
+LIB_XML_BUFFER :
+	cd lib/libdvb/libxml/xml_buffer; \
+	  ${MAKE}
+
+LIB_XML_BUFFER_ :
+	cd lib/libdvb/libxml/xml_buffer; \
+	  ${MAKE} clean
+	  
+LIB_XML_BUFFER__ :
+	cd lib/libdvb/libxml/xml_buffer; \
+	  ${MAKE} ddk_rel
+
+LIB_XML_CHAR :
+	cd lib/libdvb/libxml/xml_char; \
+	  ${MAKE}
+
+LIB_XML_CHAR_ :
+	cd lib/libdvb/libxml/xml_char; \
+	  ${MAKE} clean
+	  
+LIB_XML_CHAR__ :
+	cd lib/libdvb/libxml/xml_char; \
+	  ${MAKE} ddk_rel
+
+LIB_XML_FDT :
+	cd lib/libdvb/libxml/xml_fdt; \
+	  ${MAKE}
+
+LIB_XML_FDT_ :
+	cd lib/libdvb/libxml/xml_fdt; \
+	  ${MAKE} clean
+	  
+LIB_XML_FDT__ :
+	cd lib/libdvb/libxml/xml_fdt; \
+	  ${MAKE} ddk_rel
+
+LIB_XML_PARSE :
+	cd lib/libdvb/libxml/xml_parse; \
+	  ${MAKE}
+
+LIB_XML_PARSE_ :
+	cd lib/libdvb/libxml/xml_parse; \
+	  ${MAKE} clean
+	  
+LIB_XML_PARSE__ :
+	cd lib/libdvb/libxml/xml_parse; \
+	  ${MAKE} ddk_rel
+
+LIB_XML_TOKEN :
+	cd lib/libdvb/libxml/xml_token; \
+	  ${MAKE}
+
+LIB_XML_TOKEN_ :
+	cd lib/libdvb/libxml/xml_token; \
+	  ${MAKE} clean
+	  
+LIB_XML_TOKEN__ :
+	cd lib/libdvb/libxml/xml_token; \
+	  ${MAKE} ddk_rel
+
+LIB_XML_TREE :
+	cd lib/libdvb/libxml/xml_tree; \
+	  ${MAKE}
+
+LIB_XML_TREE_ :
+	cd lib/libdvb/libxml/xml_tree; \
+	  ${MAKE} clean
+	  
+LIB_XML_TREE__ :
+	cd lib/libdvb/libxml/xml_tree; \
+	  ${MAKE} ddk_rel
+	  
+LIB_TTX :
+	cd lib/libdvb/libttx; \
+	  ${MAKE}
+
+LIB_TTX_ :
+	cd lib/libdvb/libttx; \
+	  ${MAKE} clean
+	  
+LIB_TTX__ :
+	cd lib/libdvb/libttx; \
+	  ${MAKE} ddk_rel	  
+
+LIB_SUBT :
+	cd lib/libdvb/libsubt; \
+	  ${MAKE}
+
+LIB_SUBT_ :
+	cd lib/libdvb/libsubt; \
+	  ${MAKE} clean
+	  
+LIB_SUBT__ :
+	cd lib/libdvb/libsubt; \
+	  ${MAKE} ddk_rel
+
+LIB_ISDBTCC :
+	cd lib/libdvb/libisdbtcc; \
+	  ${MAKE}
+
+LIB_ISDBTCC_ :
+	cd lib/libdvb/libisdbtcc; \
+	  ${MAKE} clean
+	  
+LIB_ISDBTCC__ :
+	cd lib/libdvb/libisdbtcc; \
+	  ${MAKE} ddk_rel
+
+
+LIB_PICASA :
+	cd lib/libdvb/libpicasa; \
+	  ${MAKE}
+
+LIB_PICASA_ :
+	cd lib/libdvb/libpicasa; \
+	  ${MAKE} clean
+	  
+LIB_PICASA__ :
+	cd lib/libdvb/libpicasa; \
+	  ${MAKE} ddk_rel
+
+LIB_CLOSE_CAPTION :
+	cd lib/libdvb/libclosecaption; \
+	  ${MAKE}
+
+LIB_CLOSE_CAPTION_ :
+	cd lib/libdvb/libclosecaption; \
+	  ${MAKE} clean
+	  
+LIB_CLOSE_CAPTION__ :
+	cd lib/libdvb/libclosecaption; \
+	  ${MAKE} ddk_rel
+
+LIB_CLOSE_CAPTION_A :
+	cd lib/libdvb/libclosecaption/libclosecaption_a; \
+	  ${MAKE}
+
+LIB_CLOSE_CAPTION_A_ :
+	cd lib/libdvb/libclosecaption/libclosecaption_a; \
+	  ${MAKE} clean
+	  
+LIB_CLOSE_CAPTION_A__ :
+	cd lib/libdvb/libclosecaption/libclosecaption_a; \
+	  ${MAKE} ddk_rel
+
+LIB_SEC2 :
+	cd lib/libdvb/libsi/libtsi2/psi; \
+	  ${MAKE}
+
+LIB_SEC2_ :
+	cd lib/libdvb/libsi/libtsi2/psi; \
+	  ${MAKE} clean
+
+LIB_SEC2__ :
+	cd lib/libdvb/libsi/libtsi2/psi; \
+	  ${MAKE} ddk_rel
+	  
+LIB_PSI2 :
+	cd lib/libdvb/libsi/libtsi2/psi2; \
+	  ${MAKE}
+
+LIB_PSI2_ :
+	cd lib/libdvb/libsi/libtsi2/psi2; \
+	  ${MAKE} clean
+
+LIB_PSI2__ :
+	cd lib/libdvb/libsi/libtsi2/psi2; \
+	  ${MAKE} ddk_rel
+	  
+LIB_PSEARCH :
+	cd lib/libdvb/libsi/libtsi2; \
+	  ${MAKE}
+
+LIB_PSEARCH_ :
+	cd lib/libdvb/libsi/libtsi2; \
+	  ${MAKE} clean
+
+LIB_PSEARCH__ :
+	cd lib/libdvb/libsi/libtsi2; \
+	  ${MAKE} ddk_rel	  
+
+LIB_TSI3_CON_PSI :
+	cd lib/libdvb/libsi/libtsi3/control/psi; \
+	  ${MAKE}
+LIB_TSI3_CON_PSI_ :
+	cd lib/libdvb/libsi/libtsi3/control/psi; \
+	  ${MAKE} clean
+LIB_TSI3_CON_PSI__ :
+	cd lib/libdvb/libsi/libtsi3/control/psi; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_ENGINE :
+	cd lib/libdvb/libsi/libtsi3/engine; \
+	  ${MAKE}
+LIB_TSI3_ENGINE_ :
+	cd lib/libdvb/libsi/libtsi3/engine; \
+	  ${MAKE} clean
+LIB_TSI3_ENGINE__ :
+	cd lib/libdvb/libsi/libtsi3/engine; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PLUGIN_SEARCH :
+	cd lib/libdvb/libsi/libtsi3/plugin/search; \
+	  ${MAKE}
+LIB_TSI3_PLUGIN_SEARCH_ :
+	cd lib/libdvb/libsi/libtsi3/plugin/search; \
+	  ${MAKE} clean
+LIB_TSI3_PLUGIN_SEARCH__ :
+	cd lib/libdvb/libsi/libtsi3/plugin/search; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PLUGIN_SEARCH_DTG :
+	cd lib/libdvb/libsi/libtsi3/plugin/search_dtg; \
+	  ${MAKE}
+LIB_TSI3_PLUGIN_SEARCH_DTG_ :
+	cd lib/libdvb/libsi/libtsi3/plugin/search_dtg; \
+	  ${MAKE} clean
+LIB_TSI3_PLUGIN_SEARCH_DTG__ :
+	cd lib/libdvb/libsi/libtsi3/plugin/search_dtg; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PLUGIN_SEARCH_ISDBT :
+	cd lib/libdvb/libsi/libtsi3/plugin/search_isdbt; \
+	  ${MAKE}
+LIB_TSI3_PLUGIN_SEARCH_ISDBT_ :
+	cd lib/libdvb/libsi/libtsi3/plugin/search_isdbt; \
+	  ${MAKE} clean
+LIB_TSI3_PLUGIN_SEARCH_ISDBT__ :
+	cd lib/libdvb/libsi/libtsi3/plugin/search_isdbt; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PLUGIN_EIT :
+	cd lib/libdvb/libsi/libtsi3/plugin/eit; \
+	  ${MAKE}
+LIB_TSI3_PLUGIN_EIT_ :
+	cd lib/libdvb/libsi/libtsi3/plugin/eit; \
+	  ${MAKE} clean
+LIB_TSI3_PLUGIN_EIT__ :
+	cd lib/libdvb/libsi/libtsi3/plugin/eit; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PLUGIN_MONITOR :
+	cd lib/libdvb/libsi/libtsi3/plugin/monitor; \
+	  ${MAKE}
+LIB_TSI3_PLUGIN_MONITOR_ :
+	cd lib/libdvb/libsi/libtsi3/plugin/monitor; \
+	  ${MAKE} clean
+LIB_TSI3_PLUGIN_MONITOR__ :
+	cd lib/libdvb/libsi/libtsi3/plugin/monitor; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PLUGIN_MONITOR_T :
+	cd lib/libdvb/libsi/libtsi3/plugin/monitor/monitor_t; \
+	  ${MAKE}
+LIB_TSI3_PLUGIN_MONITOR_T_ :
+	cd lib/libdvb/libsi/libtsi3/plugin/monitor/monitor_t; \
+	  ${MAKE} clean
+LIB_TSI3_PLUGIN_MONITOR_T__ :
+	cd lib/libdvb/libsi/libtsi3/plugin/monitor/monitor_t; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PLUGIN_TDT :
+	cd lib/libdvb/libsi/libtsi3/plugin/tdt; \
+	  ${MAKE}
+LIB_TSI3_PLUGIN_TDT_ :
+	cd lib/libdvb/libsi/libtsi3/plugin/tdt; \
+	  ${MAKE} clean
+LIB_TSI3_PLUGIN_TDT__ :
+	cd lib/libdvb/libsi/libtsi3/plugin/tdt; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_DESCRIPTOR :
+	cd lib/libdvb/libsi/libtsi3/descriptor; \
+	  ${MAKE}
+LIB_TSI3_DESCRIPTOR_ :
+	cd lib/libdvb/libsi/libtsi3/descriptor; \
+	  ${MAKE} clean
+LIB_TSI3_DESCRIPTOR__ :
+	cd lib/libdvb/libsi/libtsi3/descriptor; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PARSER :
+	cd lib/libdvb/libsi/libtsi3/parser; \
+	  ${MAKE}
+LIB_TSI3_PARSER_ :
+	cd lib/libdvb/libsi/libtsi3/parser; \
+	  ${MAKE} clean
+LIB_TSI3_PARSER__ :
+	cd lib/libdvb/libsi/libtsi3/parser; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PARSER_DTG :
+	cd lib/libdvb/libsi/libtsi3/parser_dtg; \
+	  ${MAKE}
+LIB_TSI3_PARSER_DTG_ :
+	cd lib/libdvb/libsi/libtsi3/parser_dtg; \
+	  ${MAKE} clean
+LIB_TSI3_PARSER_DTG__ :
+	cd lib/libdvb/libsi/libtsi3/parser_dtg; \
+	  ${MAKE} ddk_rel
+
+LIB_TSI3_PARSER_ISDBT :
+	cd lib/libdvb/libsi/libtsi3/parser_isdbt; \
+	  ${MAKE}
+LIB_TSI3_PARSER_ISDBT_ :
+	cd lib/libdvb/libsi/libtsi3/parser_isdbt; \
+	  ${MAKE} clean
+LIB_TSI3_PARSER_ISDBT__ :
+	cd lib/libdvb/libsi/libtsi3/parser_isdbt; \
+	  ${MAKE} ddk_rel
+	  
+LIB_TSI3_UTILITY :
+	cd lib/libdvb/libsi/libtsi3/utility; \
+	  ${MAKE}
+LIB_TSI3_UTILITY_ :
+	cd lib/libdvb/libsi/libtsi3/utility; \
+	  ${MAKE} clean
+LIB_TSI3_UTILITY__ :
+	cd lib/libdvb/libsi/libtsi3/utility; \
+	  ${MAKE} ddk_rel
+
+LIB_EPG :
+	cd lib/libdvb/libepg; \
+	  ${MAKE}
+LIB_EPG_ :
+	cd lib/libdvb/libepg; \
+	  ${MAKE} clean
+LIB_EPG__ :
+	cd lib/libdvb/libepg; \
+	  ${MAKE} ddk_rel
+
+LIB_EPG_ATSC :
+	cd lib/libdvb/libepg_atsc; \
+	  ${MAKE}
+LIB_EPG_ATSC_ :
+	cd lib/libdvb/libepg_atsc; \
+	  ${MAKE} clean
+LIB_EPG_ATSC__ :
+	cd lib/libdvb/libepg_atsc; \
+	  ${MAKE} ddk_rel
+
+LIB_CHUNK :
+	cd lib/libstorage/libchunk; \
+	  ${MAKE}
+
+LIB_CHUNK_ :
+	cd lib/libstorage/libchunk; \
+	  ${MAKE} clean
+	  
+LIB_CHUNK__ :
+	cd lib/libstorage/libchunk; \
+	  ${MAKE} ddk_rel
+	  
+LIB_DB4 :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE}
+
+LIB_DB4_ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} clean
+
+LIB_DB4__ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} ddk_rel
+	  
+LIB_DB4_S :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_s
+
+LIB_DB4_S_ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_s clean
+
+LIB_DB4_S__ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_s ddk_rel	  
+	  
+LIB_DB4_C :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_c
+
+LIB_DB4_C_ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_c clean
+
+LIB_DB4_C__ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_c ddk_rel
+	  	  
+LIB_DB4_T :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_t
+
+LIB_DB4_T_ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_t clean
+
+LIB_DB4_T__ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_t ddk_rel
+	  
+LIB_DB4_ISDBT :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_isdbt
+
+LIB_DB4_ISDBT_ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_isdbt clean
+
+LIB_DB4_ISDBT__ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_isdbt ddk_rel
+
+LIB_DB4_ATSC :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_atsc
+
+LIB_DB4_ATSC_ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_atsc clean
+
+LIB_DB4_ATSC__ :
+	cd lib/libstorage/libdb/libdb4; \
+	  ${MAKE} -f Makefile_atsc ddk_rel 	  
+	  
+LIB_DB3 :
+	cd lib/libstorage/libdb/libdb3; \
+	  ${MAKE}
+
+LIB_DB3_ :
+	cd lib/libstorage/libdb/libdb3; \
+	  ${MAKE} clean
+LIB_DB3__ :
+	cd lib/libstorage/libdb/libdb3; \
+	  ${MAKE} ddk_rel
+
+LIB_DBEX :
+	cd lib/libstorage/libdb/dbex; \
+	  ${MAKE}
+
+LIB_DBEX_ :
+	cd lib/libstorage/libdb/dbex; \
+	  ${MAKE} clean
+	  
+LIB_DBEX__ :
+	cd lib/libstorage/libdb/dbex; \
+	  ${MAKE} ddk_rel
+
+LIB_LANG :
+	cd lib/libui/liblang; \
+	  ${MAKE}
+
+LIB_LANG_ :
+	cd lib/libui/liblang; \
+	  ${MAKE} clean
+	  
+LIB_STBINFO:
+	cd lib/libstorage/libstbinfo; \
+	  ${MAKE}
+	  		
+LIB_STBINFO_:
+	cd lib/libstorage/libstbinfo; \
+	  ${MAKE} clean
+
+LIB_STBINFO__:
+	cd lib/libstorage/libstbinfo; \
+	  ${MAKE} ddk_rel  
+
+LIB_IMAGE_COMMMON:
+	cd libimagedec/common; \
+	  ${MAKE}
+
+LIB_IMAGE_COMMMON_:
+	cd libimagedec/common; \
+	  ${MAKE} clean
+	  
+LIB_IMAGEDEC :
+	cd lib/libapplet/libmp/libimagedec; \
+	  ${MAKE}
+
+LIB_IMAGEDEC_ :
+	cd lib/libapplet/libmp/libimagedec; \
+	  ${MAKE} clean
+	  
+LIB_PNGDEC :
+	cd lib/libapplet/libmp/libimagedec/png; \
+	  ${MAKE}
+
+LIB_PNGDEC_ :
+	cd lib/libapplet/libmp/libimagedec/png; \
+	  ${MAKE} clean
+
+LIB_GUI :
+	cd lib/libui/libgui; \
+	  ${MAKE}
+
+LIB_GUI_ :
+	cd lib/libui/libgui; \
+	  ${MAKE} clean
+
+LIB_GUI__ :
+	cd lib/libui/libgui; \
+	  ${MAKE} ddk_rel
+
+LIB_OSDO :
+	cd lib/libui/libosd; \
+	  ${MAKE}
+
+LIB_OSDO_ :
+	cd lib/libui/libosd; \
+	  ${MAKE} clean
+
+LIB_OSDO__ :
+	cd lib/libui/libosd; \
+	  ${MAKE} ddk_rel
+
+LIB_GE_OSD :
+	cd lib/libui/lib_ge_osd; \
+	  ${MAKE}
+
+LIB_GE_OSD_ :
+	cd lib/libui/lib_ge_osd; \
+	  ${MAKE} clean
+
+LIB_GE_OSD__ :
+	cd lib/libui/lib_ge_osd; \
+	  ${MAKE} ddk_rel
+
+
+LIB_OSD_3D :
+	cd lib/libui/libosd/aladdin_func; \
+	  ${MAKE}
+
+LIB_OSD_3D_ :
+	cd lib/libui/libosd/aladdin_func; \
+	  ${MAKE} clean
+
+LIB_OSD_3D__ :
+	cd lib/libui/libosd/aladdin_func; \
+	  ${MAKE} ddk_rel
+
+LIB_DFONT :
+	cd lib/libui/lib_dfont; \
+	  ${MAKE}
+
+LIB_DFONT_ :
+	cd lib/libui/lib_dfont; \
+	  ${MAKE} clean
+
+LIB_DFONT__ :
+	cd lib/libui/lib_dfont; \
+	  ${MAKE} ddk_rel
+
+LIB_LOADER:
+	cd lib/libloader; \
+	  ${MAKE}
+
+LIB_LOADER_ :
+	cd lib/libloader; \
+	  ${MAKE} clean
+
+LIB_LOADER__ :
+	cd lib/libloader; \
+	  ${MAKE} ddk_rel
+	  
+VERSION_INFO :
+	cd version/; \
+	  ${MAKE}
+
+VERSION_INFO_ :
+	cd version/; \
+	  ${MAKE} clean
+
+VERSION_INFO_BL :
+	cd version/version_bl; \
+	  ${MAKE}
+
+VERSION_INFO_BL_ :
+	cd version/version_bl; \
+	  ${MAKE} clean
+
+VERSION_INFO_BL__ :
+	cd version/version_bl; \
+	  ${MAKE} ddk_rel
+
+VERSION_INFO_PLUS :
+	cd version/version_plus/; \
+	  ${MAKE}
+
+VERSION_INFO_PLUS_ :
+	cd version/version_plus/; \
+	  ${MAKE} clean
+
+VERSION_INFO_APP :
+	cd version/version_app/; \
+	  ${MAKE}
+
+VERSION_INFO_APP_ :
+	cd version/version_app/; \
+	  ${MAKE} clean
+
+VERSION_INFO_APP__ :
+	cd version/version_app/; \
+	  ${MAKE} ddk_rel
+
+DUAL_MODULES :
+	cd hld/mod/; \
+	  ${MAKE}
+
+DUAL_MODULES_:
+	cd hld/mod/; \
+	  ${MAKE} clean
+
+DUAL_MODULES__:
+	cd hld/mod/; \
+	  ${MAKE} ddk_rel
+
+LIB_UI_FW :
+	cd lib/libui/libgui2/framework; \
+	  ${MAKE}
+
+LIB_UI_FW_ :
+	cd lib/libui/libgui2/framework; \
+	  ${MAKE} clean
+
+LIB_UI_FW__ :
+	cd lib/libui/libgui2/framework; \
+	  ${MAKE} ddk_rel
+	  
+LIB_UI_UTL :
+	cd lib/libui/libgui2/utility; \
+	  ${MAKE}
+
+LIB_UI_UTL_ :
+	cd lib/libui/libgui2/utility; \
+	  ${MAKE} clean
+	  
+LIB_UI_UTL__ :
+	cd lib/libui/libgui2/utility; \
+	  ${MAKE} ddk_rel	  
+	  
+LIB_UI_CFG :
+	cd lib/libui/libgui2/config; \
+	  ${MAKE}
+
+LIB_UI_CFG_ :
+	cd lib/libui/libgui2/config; \
+	  ${MAKE} clean
+
+LIB_UI_CFG__ :
+	cd lib/libui/libgui2/config; \
+	  ${MAKE} ddk_rel
+
+LIB_OSD :
+	cd lib/libui/libgui2/osd; \
+	  ${MAKE}
+
+LIB_OSD_ :
+	cd lib/libui/libgui2/osd; \
+	  ${MAKE} clean	  
+
+LIB_OSD__ :
+	cd lib/libui/libgui2/osd; \
+	  ${MAKE} ddk_rel	  
+	  
+LIB_VFS2 :
+	cd lib/libstorage/libfs2; \
+	  ${MAKE}
+	  
+LIB_VFS2_ :
+	cd lib/libstorage/libfs2; \
+	  ${MAKE} clean
+
+LIB_VFS2__ :
+	cd lib/libstorage/libfs2; \
+	  ${MAKE} ddk_rel
+
+LIB_VFS2_S :
+	cd lib/libstorage/libfs2; \
+	  ${MAKE} -f makefile_s
+	  
+LIB_VFS2_S_ :
+	cd lib/libstorage/libfs2; \
+	  ${MAKE} -f makefile_s clean
+
+LIB_VFS2_S__ :
+	cd lib/libstorage/libfs2; \
+	  ${MAKE} -f makefile_s ddk_rel
+	  
+LIB_VFS :
+	cd lib/libstorage/libfs2/vfs; \
+	  ${MAKE}
+
+LIB_VFS_ :
+	cd lib/libstorage/libfs2/vfs; \
+	  ${MAKE} clean
+
+LIB_VFS__ :
+	cd lib/libstorage/libfs2/vfs; \
+	  ${MAKE} ddk_rel
+
+LIB_VFS_S :
+	cd lib/libstorage/libfs2/vfs; \
+	  ${MAKE} -f makefile_s
+
+LIB_VFS_S_ :
+	cd lib/libstorage/libfs2/vfs; \
+	  ${MAKE} -f makefile_s clean
+
+LIB_VFS_S__ :
+	cd lib/libstorage/libfs2/vfs; \
+	  ${MAKE} -f makefile_s ddk_rel
+  
+  
+LIB_NTFS :
+	cd lib/libstorage/libfs2/ntfs; \
+	  ${MAKE}
+
+LIB_NTFS_ :
+	cd lib/libstorage/libfs2/ntfs; \
+	  ${MAKE} clean
+
+LIB_JFFS2 :
+	cd lib/libstorage/libfs2/jffs2; \
+	  ${MAKE}
+
+LIB_JFFS2_ :
+	cd lib/libstorage/libfs2/jffs2; \
+	  ${MAKE} clean
+	  
+LIB_JFFS2__ :
+	cd lib/libstorage/libfs2/jffs2; \
+	  ${MAKE} ddk_rel
+	  
+LIB_DOSFS :
+	cd lib/libstorage/libfs2/dosfs; \
+	  ${MAKE}
+
+LIB_DOSFS_ :
+	cd lib/libstorage/libfs2/dosfs; \
+	  ${MAKE} clean
+
+LIB_DOSFS__ :
+	cd lib/libstorage/libfs2/dosfs; \
+	  ${MAKE} ddk_rel
+	  
+LIB_STDIO :
+	cd lib/libstorage/libfs2/stdio; \
+	  ${MAKE}
+
+LIB_STDIO_ :
+	cd lib/libstorage/libfs2/stdio; \
+	  ${MAKE} clean
+
+LIB_STDIO__ :
+	cd lib/libstorage/libfs2/stdio; \
+	  ${MAKE} ddk_rel
+	  
+LIB_MP :
+	cd lib/libapplet/libmp; \
+	  ${MAKE}
+
+LIB_MP_ :
+	cd lib/libapplet/libmp; \
+	  ${MAKE} clean
+
+LIB_MP_S :
+	cd lib/libapplet/libmp; \
+	  ${MAKE} -f Makefile_s all
+
+LIB_MP_S_ :
+	cd lib/libapplet/libmp; \
+	  ${MAKE} -f Makefile_s clean
+
+LIB_MP_M33 :
+	cd lib/libapplet/libmp; \
+	  ${MAKE} -f Makefile_m33 all
+
+LIB_MP_M33_ :
+	cd lib/libapplet/libmp; \
+	  ${MAKE} -f Makefile_m33 clean
+	  
+LIB_LISTS :
+	cd lib/libapplet/libmp/lists; \
+	  ${MAKE}
+
+LIB_LISTS_ :
+	cd lib/libapplet/libmp/lists; \
+	  ${MAKE} clean
+
+LIB_LISTS__ :
+	cd lib/libapplet/libmp/lists; \
+	  ${MAKE} ddk_rel
+
+LIB_PE :
+	cd lib/libapplet/libmp/pe; \
+	  ${MAKE}
+
+LIB_PE_ :
+	cd lib/libapplet/libmp/pe; \
+	  ${MAKE} clean
+
+LIB_PE__:
+	cd lib/libapplet/libmp/pe; \
+	  ${MAKE} ddk_rel
+	  
+LIB_PE_ADV_VIDEO_ENGINE :
+	cd lib/libapplet/libmp/pe/video_advanced; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_ :
+	cd lib/libapplet/libmp/pe/video_advanced; \
+	  ${MAKE} clean
+
+LIB_PE_ADV_VIDEO_ENGINE__:
+	cd lib/libapplet/libmp/pe/video_advanced; \
+	  ${MAKE} ddk_rel	  
+
+LIB_PE_MUSIC_ENGINE :
+	cd lib/libapplet/libmp/pe/music; \
+	  ${MAKE}
+
+LIB_PE_MUSIC_ENGINE_ :
+	cd lib/libapplet/libmp/pe/music; \
+	  ${MAKE} clean
+
+LIB_PE_MUSIC_ENGINE__:
+	cd lib/libapplet/libmp/pe/music; \
+	  ${MAKE} ddk_rel	  
+	  
+LIB_PE_IMAGE_ENGINE :
+	cd lib/libapplet/libmp/pe/image; \
+	  ${MAKE}
+
+LIB_PE_IMAGE_ENGINE_ :
+	cd lib/libapplet/libmp/pe/image; \
+	  ${MAKE} clean
+
+LIB_PE_IMAGE_ENGINE__:
+	cd lib/libapplet/libmp/pe/image; \
+	  ${MAKE} ddk_rel	 
+	  
+LIB_PE_S2 :
+	cd lib/libapplet/libmp/pe/pe_s2; \
+	  ${MAKE}
+
+LIB_PE_S2_ :
+	cd lib/libapplet/libmp/pe/pe_s2; \
+	  ${MAKE} clean
+
+LIB_PE_S2__:
+	cd lib/libapplet/libmp/pe/pe_s2; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR :
+	cd lib/libapplet/libpvr; \
+	  ${MAKE}
+
+LIB_PVR_ :
+	cd lib/libapplet/libpvr; \
+	  ${MAKE} clean
+	  
+
+LIB_MP_HD :
+	cd lib/libapplet/libmp_hd; \
+	  ${MAKE}
+
+LIB_MP_HD_ :
+	cd lib/libapplet/libmp_hd; \
+	  ${MAKE} clean
+
+LIB_MP_HD__ :
+	cd lib/libapplet/libmp_hd; \
+	  ${MAKE} ddk_rel
+
+LIB_MP_HD_MP1 :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1; \
+	  ${MAKE}
+
+LIB_MP_HD_MP1_ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1; \
+	  ${MAKE} clean
+
+LIB_MP_HD_MP1__ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1; \
+	  ${MAKE} ddk_rel
+
+LIB_PE_HD :
+	cd lib/libapplet/libmp_hd/pe; \
+	  ${MAKE}
+
+LIB_PE_HD_ :
+	cd lib/libapplet/libmp_hd/pe; \
+	  ${MAKE} clean
+
+LIB_PE_HD__ :
+	cd lib/libapplet/libmp_hd/pe; \
+	  ${MAKE} ddk_rel
+
+LIB_PE_HD_MP1 :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/pe; \
+	  ${MAKE}
+
+LIB_PE_HD_MP1_ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/pe; \
+	  ${MAKE} clean
+
+LIB_PE_HD_MP1__ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/pe; \
+	  ${MAKE} ddk_rel
+
+LIB_PE_MUSIC_ENGINE_INPUT_MP3_MP1 :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/pe/music/input/mp3; \
+	  ${MAKE}
+
+LIB_PE_MUSIC_ENGINE_INPUT_MP3_MP1_ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/pe/music/input/mp3; \
+	  ${MAKE} clean
+
+LIB_PE_MUSIC_ENGINE_INPUT_MP3_MP1__ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/pe/music/input/mp3; \
+	  ${MAKE} ddk_rel
+	  
+LIB_PVR_HD :
+	cd lib/libapplet/libpvr/lib_pvr_hd; \
+	  ${MAKE}
+
+LIB_PVR_HD_ :
+	cd lib/libapplet/libpvr/lib_pvr_hd; \
+	  ${MAKE} clean
+
+LIB_PVR_HD__ :
+	cd lib/libapplet/libpvr/lib_pvr_hd; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_ENG :
+	cd lib/libapplet/libpvr3/eng; \
+	  ${MAKE}
+
+LIB_PVR3_ENG_ :
+	cd lib/libapplet/libpvr3/eng; \
+	  ${MAKE} clean
+
+LIB_PVR3_ENG__ :
+	cd lib/libapplet/libpvr3/eng; \
+	  ${MAKE} ddk_rel
+	  
+
+LIB_STANDBY :
+	cd lib/libapplet/libstandby; \
+	  ${MAKE}
+
+LIB_STANDBY_ :
+	cd lib/libapplet/libstandby; \
+	  ${MAKE} clean
+	  
+LIB_STANDBY__ :
+	cd lib/libapplet/libstandby; \
+	  ${MAKE} ddk_rel	  
+
+
+LIB_PVR3_MGR :
+	cd lib/libapplet/libpvr3/mgr; \
+	  ${MAKE}
+
+LIB_PVR3_MGR_ :
+	cd lib/libapplet/libpvr3/mgr; \
+	  ${MAKE} clean
+
+LIB_PVR3_MGR__ :
+	cd lib/libapplet/libpvr3/mgr; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_API36 :
+	cd lib/libapplet/libpvr3/m36; \
+	  ${MAKE}
+
+LIB_PVR3_API36_ :
+	cd lib/libapplet/libpvr3/m36; \
+	  ${MAKE} clean
+
+LIB_PVR3_API36__ :
+	cd lib/libapplet/libpvr3/m36; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_API33 :
+	cd lib/libapplet/libpvr3/m33; \
+	  ${MAKE}
+
+LIB_PVR3_API33_ :
+	cd lib/libapplet/libpvr3/m33; \
+	  ${MAKE} clean
+
+LIB_PVR3_API33__ :
+	cd lib/libapplet/libpvr3/m33; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_ENG_S :
+	cd lib/libapplet/libpvr3/libpvr3_s/eng; \
+	  ${MAKE}
+
+LIB_PVR3_ENG_S_ :
+	cd lib/libapplet/libpvr3/libpvr3_s/eng; \
+	  ${MAKE} clean
+
+LIB_PVR3_ENG_S__ :
+	cd lib/libapplet/libpvr3/libpvr3_s/eng; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_MGR_S :
+	cd lib/libapplet/libpvr3/libpvr3_s/mgr; \
+	  ${MAKE}
+
+LIB_PVR3_MGR_S_ :
+	cd lib/libapplet/libpvr3/libpvr3_s/mgr; \
+	  ${MAKE} clean
+
+LIB_PVR3_MGR_S__ :
+	cd lib/libapplet/libpvr3/libpvr3_s/mgr; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_API36_S :
+	cd lib/libapplet/libpvr3/libpvr3_s/m36; \
+	  ${MAKE}
+
+LIB_PVR3_API36_S_ :
+	cd lib/libapplet/libpvr3/libpvr3_s/m36; \
+	  ${MAKE} clean
+
+LIB_PVR3_API36_S__ :
+	cd lib/libapplet/libpvr3/libpvr3_s/m36; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_API33_S :
+	cd lib/libapplet/libpvr3/libpvr3_s/m33; \
+	  ${MAKE}
+
+LIB_PVR3_API33_S_ :
+	cd lib/libapplet/libpvr3/libpvr3_s/m33; \
+	  ${MAKE} clean
+
+LIB_PVR3_API33_S__ :
+	cd lib/libapplet/libpvr3/libpvr3_s/m33; \
+	  ${MAKE} ddk_rel
+
+LIB_PVR3_CRYPTO :
+	cd lib/libapplet/libpvr3/crypto; \
+	  ${MAKE}
+
+LIB_PVR3_CRYPTO_ :
+	cd lib/libapplet/libpvr3/crypto; \
+	  ${MAKE} clean
+
+LIB_PVR3_CRYPTO__ :
+	cd lib/libapplet/libpvr3/crypto; \
+	  ${MAKE} ddk_rel
+	  
+LIB_TSG :
+	cd lib/libapplet/libtsg; \
+	  ${MAKE}
+
+LIB_TSG_ :
+	cd lib/libapplet/libtsg; \
+	  ${MAKE} clean
+
+LIB_TSG__ :
+	cd lib/libapplet/libtsg; \
+	  ${MAKE} ddk_rel
+
+LIB_PLAYLIST_HD :
+	cd lib/libapplet/libmp_hd/playlist; \
+	  ${MAKE}
+
+LIB_PLAYLIST_HD_ :
+	cd lib/libapplet/libmp_hd/playlist; \
+	  ${MAKE} clean
+
+LIB_PLAYLIST_HD__ :
+	cd lib/libapplet/libmp_hd/playlist; \
+	  ${MAKE} ddk_rel
+	  
+LIB_PLAYLIST :
+	cd lib/libapplet/libmp/playlist; \
+	  ${MAKE}
+
+LIB_PLAYLIST_ :
+	cd lib/libapplet/libmp/playlist; \
+	  ${MAKE} clean
+
+LIB_PLAYLIST__ :
+	cd lib/libapplet/libmp/playlist; \
+	  ${MAKE} ddk_rel
+ 
+LIB_PLAYLIST_MP1 :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/playlist; \
+	  ${MAKE}
+
+LIB_PLAYLIST_MP1_ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/playlist; \
+	  ${MAKE} clean
+
+LIB_PLAYLIST_MP1__ :
+	cd lib/libapplet/libmp_hd/libmp_hd_mp1/playlist; \
+	  ${MAKE} ddk_rel
+
+UDI_MHEG_V20_CORE :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f Makefile_core
+
+UDI_MHEG_V20_CORE_ :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f Makefile_core clean
+
+UDI_MHEG_V20_APP :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f Makefile_app
+
+UDI_MHEG_V20_APP_ :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f Makefile_app clean 
+
+UDI_MHEG_V20_APP__ :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f Makefile_app mh5_rel
+	  
+UDI_MHEG_V20_CIPLUS_APP :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f makefile_ciplus_app
+
+UDI_MHEG_V20_CIPLUS_APP_ :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f makefile_ciplus_app clean 
+
+UDI_MHEG_V20_CIPLUS_APP__ :
+	cd udi/lib_mheg5_v20/; \
+	  ${MAKE} -f makefile_ciplus_app mh5_rel
+
+LIB_PLAYLIST_T :
+	cd lib/libapplet/libmp_hd/playlist/playlist_t; \
+	  ${MAKE}
+
+LIB_PLAYLIST_T_ :
+	cd lib/libapplet/libmp_hd/playlist/playlist_t; \
+	  ${MAKE} clean
+
+LIB_PLAYLIST_T__ :
+	cd lib/libapplet/libmp_hd/playlist/playlist_t; \
+	  ${MAKE} ddk_rel
+
+LIB_GE :
+	cd lib/libui/libge; \
+	  ${MAKE}
+
+LIB_GE_ :
+	cd lib/libui/libge; \
+	  ${MAKE} clean
+
+LIB_GE__ :
+	cd lib/libui/libge; \
+	  ${MAKE} ddk_rel
+
+
+LLD_PAN_PT6958_27E4 :
+	cd lld/pan/pt6958_27e4; \
+	  ${MAKE}
+
+LLD_PAN_PT6958_27E4_ :
+	cd lld/pan/pt6958_27e4; \
+	  ${MAKE} clean
+
+LIB_BT :
+	cd lib/libcommunicate/libtcpip/libbt; \
+		${MAKE}
+
+LIB_BT_ :
+	cd lib/libcommunicate/libtcpip/libbt; \
+		${MAKE} clean
+
+LIB_PE_AV_PLAYER_ENGINE :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player; \
+		${MAKE}
+
+LIB_PE_AV_PLAYER_ENGINE_ :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player; \
+		${MAKE} clean
+		
+LIB_PE_AV_PLAYER_CODEC_AAC :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player/codec/aac; \
+		${MAKE}
+
+LIB_PE_AV_PLAYER_CODEC_AAC_ :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player/codec/aac; \
+		${MAKE} clean
+		
+LIB_PE_AV_PLAYER_CODEC_AVC :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player/codec/avc; \
+		${MAKE}
+
+LIB_PE_AV_PLAYER_CODEC_AVC_ :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player/codec/avc; \
+		${MAKE} clean
+
+LIB_PE_AV_PLAYER_CONTAINER_MP4 :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player/container/mp4; \
+		${MAKE}
+
+LIB_PE_AV_PLAYER_CONTAINER_MP4_ :
+	cd lib/libapplet/libmp/pe/pe_s2/av_player/container/mp4; \
+		${MAKE} clean						
+LLD_DSC :
+	cd lld/dsc; \
+	  ${MAKE}
+
+LLD_DSC_ :
+	cd lld/dsc; \
+	  ${MAKE} clean
+
+LLD_DSC_M36F :
+	cd lld/dsc/m36f; \
+	  ${MAKE}
+
+LLD_DSC_M36F_ :
+	cd lld/dsc/m36f; \
+	  ${MAKE} clean
+
+LLD_GMA_M36F :
+	cd lld/gma/m36f; \
+	  ${MAKE}
+
+LLD_GMA_M36F_ :
+	cd lld/gma/m36f; \
+	  ${MAKE} clean
+	  
+LLD_CRYPTO :
+	cd lld/crypto; \
+	  ${MAKE}
+
+LLD_CRYPTO_ :
+	cd lld/crypto; \
+	  ${MAKE} clean
+
+LLD_CRYPTO_M36F :
+	cd lld/crypto/m36f; \
+	  ${MAKE}
+
+LLD_CRYPTO_M36F_ :
+	cd lld/crypto/m36f; \
+	  ${MAKE} clean
+
+LLD_CRYPTO_GLUE :
+	cd lld/crypto_glue; \
+	  ${MAKE}
+
+LLD_CRYPTO_GLUE_ :
+	cd lld/crypto_glue; \
+	  ${MAKE} clean
+
+
+LLD_TRNG_M36F :
+	cd lld/trng/m36f; \
+	  ${MAKE}
+
+LLD_TRNG_M36F_ :
+	cd lld/trng/m36f; \
+	  ${MAKE} clean
+
+HLD_DSC :
+	cd hld/dsc; \
+	  ${MAKE}
+
+HLD_DSC_ :
+	cd hld/dsc; \
+	  ${MAKE} clean
+HLD_DSC__ :
+	cd hld/dsc; \
+	  ${MAKE} ddk_rel
+
+LLD_TRIM :
+	cd lld/trim; \
+	  ${MAKE}
+LLD_TRIM_ :
+	cd lld/trim; \
+	  ${MAKE} clean
+
+HLD_CSD :
+	cd hld/c0200a/nocs_csd; \
+	  ${MAKE}
+HLD_CSD_ :
+	cd hld/c0200a/nocs_csd; \
+	  ${MAKE} clean
+HLD_CSD__ :
+	cd hld/c0200a/nocs_csd; \
+	  ${MAKE} ddk_rel
+	  
+HLD_CTD :
+	cd hld/c0200a/nocs_ctd; \
+	  ${MAKE}
+HLD_CTD_ :
+	cd hld/c0200a/nocs_ctd; \
+	  ${MAKE} clean
+HLD_CTD__ :
+	cd hld/c0200a/nocs_ctd; \
+	  ${MAKE} ddk_rel
+
+LIB_DSC_LLD_PLUGIN_CSA3 :
+	cd lld/sec/m36f; \
+	${MAKE} plugin_rel
+	  
+LIB_DSC_LLD_PLUGIN_CSA3_ :
+	cd lld/sec/m36f; \
+	${MAKE} plugin_clean	  
+	  
+LIB_DSC_LLD_PLUGIN_CSA3__ :
+	cd lld/sec/m36f; \
+	${MAKE} plugin_rel	  
+	  
+HLD_PVR :
+	cd hld/pvr; \
+	  ${MAKE}
+
+HLD_PVR_ :
+	cd hld/pvr; \
+	  ${MAKE} clean
+HLD_PVR__ :
+	cd hld/pvr; \
+	  ${MAKE} ddk_rel
+	  
+HLD_GMA :
+	cd hld/gma; \
+	  ${MAKE}
+
+HLD_GMA_ :
+	cd hld/gma; \
+	  ${MAKE} clean
+HLD_GMA__ :
+	cd hld/gma; \
+	  ${MAKE} ddk_rel
+	  
+HLD_CRYPTO :
+	cd hld/crypto; \
+	  ${MAKE}
+
+HLD_CRYPTO_ :
+	cd hld/crypto; \
+	  ${MAKE} clean
+
+HLD_CRYPTO__ :
+	cd hld/crypto; \
+	  ${MAKE} ddk_rel
+
+HLD_AVSYNC :
+	cd hld/avsync; \
+	  ${MAKE}
+
+HLD_AVSYNC_ :
+	cd hld/avsync; \
+	  ${MAKE} clean
+	  
+HLD_AVSYNC__ :
+	cd hld/avsync; \
+	  ${MAKE} ddk_rel
+
+LLD_AVSYNC :
+	cd lld/avsync; \
+	  ${MAKE}
+
+LLD_AVSYNC_ :
+	cd lld/avsync; \
+	  ${MAKE} clean
+
+LLD_AVSYNC__ :
+	cd lld/avsync; \
+	  ${MAKE} ddk_rel
+HLD_NOCS3_BSD :
+	cd hld/c0200a/nocs3_bsd; \
+	  ${MAKE}
+
+HLD_NOCS3_BSD_ :
+	cd hld/c0200a/nocs3_bsd; \
+	  ${MAKE} clean
+
+HLD_NOCS3_BSD__ :
+	cd hld/c0200a/nocs3_bsd; \
+	  ${MAKE} ddk_rel
+	  
+NOCS3_BSD_CRYPTO :
+	cd hld/c0200a/nocs3_bsd/crypto; \
+	  ${MAKE}
+
+NOCS3_BSD_CRYPTO_ :
+	cd hld/c0200a/nocs3_bsd/crypto; \
+	  ${MAKE} clean
+
+NOCS3_BSD_CRYPTO__ :
+	cd hld/c0200a/nocs3_bsd/crypto; \
+	  ${MAKE} ddk_rel	  
+
+HLD_CA_CERT :
+	cd hld/c0200a/ca_cert; \
+	  ${MAKE}
+
+HLD_CA_CERT_ :
+	cd hld/c0200a/ca_cert; \
+	  ${MAKE} clean
+
+HLD_CA_CERT__ :
+	cd hld/c0200a/ca_cert; \
+	  ${MAKE} ddk_rel 
+
+LIB_PE_ADV_VIDEO_ENGINE_MKV :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mkv; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_MKV_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mkv; \
+	  ${MAKE} clean
+	  
+LIB_PE_ADV_VIDEO_ENGINE_ALIP :
+	cd lib/libapplet/libmp/pe/video_advanced/container/alip; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_ALIP_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/alip; \
+	  ${MAKE} clean
+		
+LIB_PE_ADV_VIDEO_ENGINE_MPEG :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mpeg; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_MPEG_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mpeg; \
+	  ${MAKE} clean
+
+LIB_PE_ADV_VIDEO_ENGINE_TS :
+	cd lib/libapplet/libmp/pe/video_advanced/container/ts; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_TS_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/ts; \
+	  ${MAKE} clean
+
+LIB_MP4DEC :
+	cd lib/libapplet/libmp/libmp4dec; \
+	  ${MAKE}
+
+LIB_MP4DEC_ :
+	cd lib/libapplet/libmp/libmp4dec; \
+	  ${MAKE} clean
+
+LIB_VP8DEC :
+	cd lib/libapplet/libmp/libvp8dec; \
+	  ${MAKE}
+
+LIB_VP8DEC_ :
+	cd lib/libapplet/libmp/libvp8dec; \
+	  ${MAKE} clean
+	  
+LIB_PE_ADV_VIDEO_ENGINE_AVI :
+	cd lib/libapplet/libmp/pe/video_advanced/container/avi; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_AVI_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/avi; \
+	  ${MAKE} clean
+	  
+LIB_PE_ADV_VIDEO_ENGINE_BYE2 :
+	cd lib/libapplet/libmp/pe/video_advanced/container/bye2; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_BYE2_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/bye2; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_MUSIC_ENGINE_AAC :
+	cd lib/libapplet/libmp/pe/video_advanced/container/aac; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_AAC_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/aac; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_MUSIC_ENGINE_AC3 :
+	cd lib/libapplet/libmp/pe/video_advanced/container/ac3; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_AC3_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/ac3; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_MUSIC_ENGINE_MP3 :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mp3; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_MP3_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mp3; \
+	  ${MAKE} clean	
+	  
+LIB_PE_ADV_MUSIC_ENGINE_WAV :
+	cd lib/libapplet/libmp/pe/video_advanced/container/wav; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_WAV_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/wav; \
+	  ${MAKE} clean	
+	  
+LIB_PE_ADV_MUSIC_ENGINE_OGG :
+	cd lib/libapplet/libmp/pe/video_advanced/container/ogg; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_OGG_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/ogg; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_MUSIC_ENGINE_LPCM :
+	cd lib/libapplet/libmp/pe/video_advanced/container/lpcm; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_LPCM_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/lpcm; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_MUSIC_ENGINE_BYE1 :
+	cd lib/libapplet/libmp/pe/video_advanced/container/bye1; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_BYE1_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/bye1; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_MUSIC_ENGINE_FLAC :
+	cd lib/libapplet/libmp/pe/video_advanced/container/flac; \
+	  ${MAKE}
+
+LIB_PE_ADV_MUSIC_ENGINE_FLAC_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/flac; \
+	  ${MAKE} clean	
+	  
+LIB_PE_ADV_AUDIO_PARSER :
+	cd lib/libapplet/libmp/pe/video_advanced/parser; \
+	  ${MAKE}
+
+LIB_PE_ADV_AUDIO_PARSER_ :
+	cd lib/libapplet/libmp/pe/video_advanced/parser; \
+	  ${MAKE} clean	
+	   
+LIB_PE_ADV_VIDEO_ENGINE_MP4 :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mp4; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_MP4_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/mp4; \
+	  ${MAKE} clean	 
+
+LIB_PE_ADV_VIDEO_ENGINE_FLV :
+	cd lib/libapplet/libmp/pe/video_advanced/container/flv; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_FLV_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container/flv; \
+	  ${MAKE} clean
+
+LIB_PE_ADV_VIDEO_ENGINE_ALI :
+	cd lib/libapplet/libmp/pe/video_advanced/ali; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_ALI_ :
+	cd lib/libapplet/libmp/pe/video_advanced/ali; \
+	  ${MAKE} clean
+	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MP2 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mp2; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MP2_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mp2; \
+	  ${MAKE} clean	 
+	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MP3 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mpx; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MP3_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mpx; \
+	  ${MAKE} clean	 
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_BYE1 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/bye1; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_BYE1_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/bye1; \
+	  ${MAKE} clean	  
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_PCM :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/pcm; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_PCM_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/pcm; \
+	  ${MAKE} clean	  
+	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_COMMON :
+	cd lib/libapplet/libmp/pe/video_advanced/common; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_COMMON_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_VIDEO_ENGINE_CORE :
+	cd lib/libapplet/libmp/pe/video_advanced/container; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CORE_ :
+	cd lib/libapplet/libmp/pe/video_advanced/container; \
+	  ${MAKE} clean
+	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_AAC :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/aac; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_AAC_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/aac; \
+	  ${MAKE} clean	  
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_FLAC :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/flac; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_FLAC_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/flac; \
+	  ${MAKE} clean
+	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_AMR :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/amr; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_AMR_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/amr; \
+	  ${MAKE} clean
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_ADPCM :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/adpcm; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_ADPCM_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/adpcm; \
+	  ${MAKE} clean	  
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_AC3 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/ac3; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_AC3_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/ac3; \
+	  ${MAKE} clean	  
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_OGG :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/ogg; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_OGG_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/ogg; \
+	  ${MAKE} clean	  
+	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_VORBIS :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/vorbis; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_VORBIS_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/vorbis; \
+	  ${MAKE} clean	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_DTS :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/dts; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_DTS_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/dts; \
+	  ${MAKE} clean	  
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_XVID :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/xvid; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_XVID_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/xvid; \
+	  ${MAKE} clean	  
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_H264 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/h264; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_H264_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/h264; \
+	  ${MAKE} clean
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_H265 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/h265; \
+	  ${MAKE}
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_H265_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/h265; \
+	  ${MAKE} clean
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MPEG2 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mpeg2; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MPEG2_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mpeg2; \
+	  ${MAKE} clean
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_DRM :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/libDrmDevice; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_DRM_ :	
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/libDrmDevice; \
+	  ${MAKE} clean 
+	  
+LIB_PE_ADV_VIDEO_ENGINE_AVI_PLUGINS_SUBT :
+	cd lib/libapplet/libmp/pe/video_advanced/avi/plugin/subtitle; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_AVI_PLUGINS_SUBT_ :
+	cd lib/libapplet/libmp/pe/video_advanced/avi/plugin/subtitle; \
+	  ${MAKE} clean 
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MJPG :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mjpg; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_MJPG_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/mjpg; \
+	  ${MAKE} clean	
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_VP8 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/vp8; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_VP8_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/vp8; \
+	  ${MAKE} clean
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_ES :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/es; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_ES_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/es; \
+	  ${MAKE} clean
+	  	  
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_VC1 :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/vc1; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_VC1_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/vc1; \
+	  ${MAKE} clean	
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_TTF :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/ttf; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_TTF_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/ttf; \
+	  ${MAKE} clean 
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_CONTROL :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/control; \
+	  ${MAKE}
+
+LIB_PE_ADV_VIDEO_ENGINE_CON_PLUGINS_CONTROL_ :
+	cd lib/libapplet/libmp/pe/video_advanced/common/plugin/control; \
+	  ${MAKE} clean	
+
+LIB_PE_EMBEDED_SUBTITLE :
+	cd lib/libapplet/libmp/pe/video_advanced/subtitle/embeded_subtitle; \
+	  ${MAKE}
+
+LIB_PE_EMBEDED_SUBTITLE_ :
+	cd lib/libapplet/libmp/pe/video_advanced/subtitle/embeded_subtitle; \
+	  ${MAKE} clean	
+ 
+LIB_PE_EXTERNAL_SUBTITLE :
+	cd lib/libapplet/libmp/pe/video_advanced/subtitle/external_subtitle; \
+	  ${MAKE}
+
+LIB_PE_EXTERNAL_SUBTITLE_ :
+	cd lib/libapplet/libmp/pe/video_advanced/subtitle/external_subtitle; \
+	  ${MAKE} clean	
+
+LIB_PE_EXTERNAL_SUBTITLE__ :
+	cd lib/libapplet/libmp/pe/video_advanced/subtitle/external_subtitle; \
+		${MAKE} ddk_rel
+	  	 
+PLUGIN_ALL:
+	cd see/plugin_m36; \
+	  ${MAKE}
+
+PLUGIN_ALL_:
+	cd see/plugin_m36; \
+	  ${MAKE} clean	
+
+LLD_SBM :
+	cd lld/sbm; \
+	  ${MAKE}
+
+LLD_SBM_ :
+	cd lld/sbm; \
+	  ${MAKE} clean
+
+LIB_ALI_PLAY:
+	cd lib/libapplet/libaliplay; \
+	 ${MAKE}
+
+LIB_ALI_PLAY_:
+	cd lib/libapplet/libaliplay; \
+	 ${MAKE} clean
+
+LIB_ALI_HLS:
+	cd lib/libcommunicate/libtcpip/libalihls; \
+	 ${MAKE}
+LIB_ALI_HLS_:
+	cd lib/libcommunicate/libtcpip/libalihls; \
+	 ${MAKE} clean
+LIB_ALI_HLS__:
+	cd lib/libcommunicate/libtcpip/libalihls; \
+	 ${MAKE} ddk_rel
+LIB_SATIP_CLIENT :
+	cd lib/libapplet/libsat2ip/client; \
+	  ${MAKE}
+
+LIB_SATIP_CLIENT_ :
+	cd lib/libapplet/libsat2ip/client; \
+	  ${MAKE} clean
+
+LIB_SATIP_CLIENT__ :
+	cd lib/libapplet/libsat2ip/client; \
+	  ${MAKE} ddk_rel
+
+LIB_SATIP_CLIENT_CORE :
+	cd lib/libapplet/libsat2ip/client/core; \
+	  ${MAKE}
+
+LIB_SATIP_CLIENT_CORE_ :
+	cd lib/libapplet/libsat2ip/client/core; \
+	  ${MAKE} clean
+
+LIB_SATIP_CLIENT_CORE__ :
+	cd lib/libapplet/libsat2ip/clien/core; \
+	  ${MAKE} ddk_rel
+
+LIB_JSON :
+	cd lib/libapplet/libjson; \
+		${MAKE}
+		
+LIB_JSON_ :
+	cd lib/libapplet/libjson; \
+		${MAKE} clean
+
+LIB_JSON__ :
+	cd lib/libapplet/libjson; \
+		${MAKE} ddk_rel
+
+LIB_WIFI_STORAGE :
+	cd lib/libapplet/libwifistorage; \
+		${MAKE}
+		
+LIB_WIFI_STORAGE_ :
+	cd lib/libapplet/libwifistorage; \
+		${MAKE} clean
+		
+LIB_WIFI_STORAGE__ :
+	cd lib/libapplet/libwifistorage; \
+		${MAKE} ddk_rel
+
+UDI_ENRICH:
+	cd udi/enrich;	\
+		${MAKE}
+
+UDI_ENRICH_:
+	cd udi/enrich;	\
+	${MAKE} clean
+
+UDI_ENRICH__:
+	cd udi/enrich;	\
+	${MAKE} ddk_rel 
+
+UDI_ENRICH_FAKE:
+	cd udi/enrich/fake;	\
+		${MAKE}
+
+UDI_ENRICH_FAKE_:
+	cd udi/enrich/fake;	\
+	${MAKE} clean
+
+UDI_ENRICH_FAKE__:
+	cd udi/enrich/fake;	\
+	${MAKE} ddk_rel 
+
+UDI_ENRICH_CODETEST:
+	cd udi/enrich/code_test;	\
+		${MAKE}
+
+UDI_ENRICH_CODETEST_:
+	cd udi/enrich/code_test;	\
+	${MAKE} clean
+
+UDI_ENRICH_CODETEST__:
+	cd udi/enrich/code_test;	\
+	${MAKE} ddk_rel 
+	
+UDI_MPHDI:
+	cd udi/mphdi;	\
+		${MAKE}
+
+UDI_MPHDI_:
+	cd udi/mphdi;	\
+	${MAKE} clean
+
+UDI_MPHDI__:
+	cd udi/mphdi;	\
+	${MAKE} ddk_rel 
+
+UDI_MPHDI_FAKE:
+	cd udi/mphdi/fake;	\
+		${MAKE}
+
+UDI_MPHDI_FAKE_:
+	cd udi/mphdi/fake;	\
+	${MAKE} clean
+
+UDI_MPHDI_FAKE__:
+	cd udi/mphdi/fake;	\
+	${MAKE} ddk_rel 
+
+UDI_MPHDI_CODETEST:
+	cd udi/mphdi/code_test;	\
+		${MAKE}
+
+UDI_MPHDI_CODETEST_:
+	cd udi/mphdi/code_test;	\
+	${MAKE} clean
+
+UDI_MPHDI_CODETEST__:
+	cd udi/mphdi/code_test;	\
+	${MAKE} ddk_rel 
+
+UDI_ROCME:
+	cd udi/rocme;	\
+		${MAKE}
+
+UDI_ROCME_:
+	cd udi/rocme;	\
+	${MAKE} clean
+
+UDI_ROCME__:
+	cd udi/rocme;	\
+	${MAKE} ddk_rel 
+
+UDI_ROCME_FAKE:
+	cd udi/rocme/fake;	\
+		${MAKE}
+
+UDI_ROCME_FAKE_:
+	cd udi/rocme/fake;	\
+	${MAKE} clean
+
+UDI_ROCME_FAKE__:
+	cd udi/rocme/fake;	\
+	${MAKE} ddk_rel 
+
+UDI_ROCME_CODETEST:
+	cd udi/rocme/code_test;	\
+		${MAKE}
+
+UDI_ROCME_CODETEST_:
+	cd udi/rocme/code_test;	\
+	${MAKE} clean
+
+UDI_ROCME_CODETEST__:
+	cd udi/rocme/code_test;	\
+	${MAKE} ddk_rel 
+	
+LLD_VSC :
+	cd lld/vsc; \
+	  ${MAKE}
+
+LLD_VSC_ :
+	cd lld/vsc; \
+	  ${MAKE} clean
+
+LLD_ICAS :
+	cd lld/icas; \
+	  ${MAKE}
+
+LLD_ICAS_ :
+	cd lld/icas; \
+	  ${MAKE} clean	  
+
+LLD_C0700A_VSC :
+	cd lld/vsc/c0700a_vsc; \
+	  ${MAKE}
+
+LLD_C0700A_VSC_ :
+	cd lld/vsc/c0700a_vsc; \
+	  ${MAKE} clean	  
+	  
+LLD_IFCP :
+	cd lld/ifcp; \
+	  ${MAKE}
+
+LLD_IFCP_ :
+	cd lld/ifcp; \
+	  ${MAKE} clean
+
+UDI_NV:
+	cd udi/nv;	\
+		${MAKE}
+
+UDI_NV_:
+	cd udi/nv;	\
+	${MAKE} clean
+
+UDI_NV__:
+	cd udi/nv;	\
+	${MAKE} ddk_rel 
+
+UDI_NV_TEST:
+	cd udi/nv/test;	\
+		${MAKE}
+
+UDI_NV_TEST_:
+	cd udi/nv/test;	\
+	${MAKE} clean
+
+UDI_NV_TEST__:
+	cd udi/nv/test;	\
+	${MAKE} ddk_rel
+	
+LLD_NIM_MXL_214C :
+	cd lld/nim/dvbc/mxl_214c; \
+	  ${MAKE}
+
+LLD_NIM_MXL_214C_ :
+	cd lld/nim/dvbc/mxl_214c; \
+	  ${MAKE} clean
+
+LLD_NIM_MXL_214C__ :
+	cd lld/nim/dvbc/mxl_214c; \
+	  ${MAKE} ddk_rel
+LLD_HHE :
+	cd lld/hhe; \
+	  ${MAKE}
+LLD_HHE_ :
+	cd lld/hhe; \
+	  ${MAKE} clean
+LLD_HHE__:
+	cd lld/hhe; \
+	  ${MAKE} ddk_rel
+	
+LLD_CERT :
+	cd lld/cert; \
+	  ${MAKE}
+LLD_CERT_ :
+	cd lld/cert; \
+	  ${MAKE} clean
+
+HLD_CERT :
+	cd hld/cert; \
+	  ${MAKE}
+HLD_CERT_ :
+	cd hld/cert; \
+	  ${MAKE} clean
+HLD_CERT__ :
+	cd hld/cert; \
+	  ${MAKE} ddk_rel
+
+HLD_CF :
+	cd hld/cf; \
+	  ${MAKE}
+HLD_CF_ :
+	cd hld/cf; \
+	  ${MAKE} clean
+HLD_CF__ :
+	cd hld/cf; \
+	  ${MAKE} ddk_rel
+	  
+LLD_CF :
+	cd lld/cf; \
+	  ${MAKE}
+LLD_CF_ :
+	cd lld/cf; \
+	  ${MAKE} clean
+
+NOCS3_CSD :
+	cd hld/c0200a/nocs3_csd; \
+	  ${MAKE}
+NOCS3_CSD_ :
+	cd hld/c0200a/nocs3_csd; \
+	  ${MAKE} clean
+NOCS3_CSD__ :
+	cd hld/c0200a/nocs3_csd; \
+	  ${MAKE} ddk_rel
+	  
+NOCS3_SEC :
+	cd hld/c0200a/nocs3_sec; \
+	  ${MAKE}
+NOCS3_SEC_ :
+	cd hld/c0200a/nocs3_sec; \
+	  ${MAKE} clean
+NOCS3_SEC__ :
+	cd hld/c0200a/nocs3_sec; \
+	  ${MAKE} ddk_rel
+
+NOCS3_CERT :
+	cd hld/c0200a/nocs3_cert; \
+	  ${MAKE}
+NOCS3_CERT_ :
+	cd hld/c0200a/nocs3_cert; \
+	  ${MAKE} clean
+NOCS3_CERT__ :
+	cd hld/c0200a/nocs3_cert; \
+	  ${MAKE} ddk_rel
+	  
+LIB_FDT :
+	cd lib/libfdt; \
+	  ${MAKE}
+
+LIB_FDT_ :
+	cd lib/libfdt; \
+	  ${MAKE} clean
+
+LIB_FDT__ :
+	cd lib/libfdt; \
+	  ${MAKE} ddk_rel	  
+	  
+LIB_GA :
+	cd lib/libga; \
+	  ${MAKE}
+	  
+LIB_GA_ :
+	cd lib/libga; \
+	  ${MAKE} clean
+
+LIB_GA__ :
+	cd lib/libga; \
+	  ${MAKE} ddk_rel
+LIB_SMK :
+	cd lib/libcas/smk; \
+	  ${MAKE}
+	  
+LIB_SMK_ :
+	cd lib/libcas/smk; \
+	  ${MAKE} clean
+
+LIB_SMK__ :
+	cd lib/libcas/smk; \
+	  ${MAKE} ddk_rel
+
+LLD_THERMAL :
+	cd lld/thermal; \
+	  ${MAKE}
+LLD_THERMAL_ :
+	cd lld/thermal; \
+	  ${MAKE} clean
+
+HLD_CASI :
+	cd hld/casi; \
+	  ${MAKE}
+
+HLD_CASI_ :
+	cd hld/casi; \
+	  ${MAKE} clean
+
+HLD_CASI__ :
+	cd hld/casi; \
+	  ${MAKE} ddk_rel 
+	
+	
